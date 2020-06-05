@@ -2,58 +2,83 @@
   body {
     background-image: url("okra-raw.jpg");
   }
+
+  .td1{
+    text-align: left;
+  }
+
+  .td2{
+    text-align: center;
+  }
+
+  .td3{
+    text-align: right;
+  }
+
+  .blinking{
+    animation:blinkingText 2s infinite;
+  }
+  @keyframes blinkingText{
+      0%{     color: #000;    }
+      49%{    color: #000; }
+      60%{    color: transparent; }
+      99%{    color:transparent;  }
+      100%{   color: #000;    }
+  }
 </style>
 
 <div style="background: white; width: 100%">
   <br />
   <p style="text-align: center; font-size: 24;">Nikki BreAnne presents</p>
-  <h1 style="text-align: center; font-size: 72;">OKRAFANS</h1>
+  <h1 class="blinking" style="text-align: center; font-size: 96;">OKRAFANS</h1>
 </div>
 
 <table style="margin-left:auto;margin-right:auto;">
   <tbody>
     <tr>
-      <td>
+      <td class="td1">
         <img style="width: 32em;" src="bestStreamer.gif"/>
       </td>
-      <td></td>
-      <td>
+      <td class="td2">
+        <img style="height: 25em;" src="Okr.png"/>
+      </td>
+      <td class="td3">
         <img style="width: 32em;" src="nikkiInWonderland.gif"/>
       </td>
     </tr>
     <tr>
-      <td>
-        <img style="width: 32em;" src="nikkibAhh.gif"/>
+      <td class="td1">
+        <img style="width: 27em;" src="nikkibAhh.gif"/>
       </td>
-      <td>
+      <td class="td2">
         <img style="width: 32em;" src="okragone.gif"/>
         <img style="width: 32em;" src="okragone.gif"/>
       </td>
-      <td>
+      <td class="td3">
         <img style="width: 32em;" src="jifNotGif.png"/>
       </td>
     </tr>
     <tr>
-      <td>
+      <td class="td1">
         <img style="width: 35em;" src="ghostxnikki.jpg"/>
       </td>
-      <td>
+      <td class="td2">
         <img style="height: 25em;" src="ghost.gif"/>
       </td>
-      <td>
+      <td class="td3">
         <img style="height: 25em;" src="nikkibBlush.gif"/>
       </td>
     </tr>
     <tr>
-      <td>
+      <td class="td1">
         <img style="height: 70em" src="EZm5d_VUMAAWVKW.jpg"/>
       </td>
-      <td>
+      <td class="td2">
         <img style="width: 60em;" src="nikkitractor.jpg"/>
         <br />
         <img style="width: 60em;" src="finalshim.png"/>
       </td>
-      <td>
+      <td class="td3">
         <img style="height: 70em" src="Princess_Nikki.jpg"/>
       </td>
     </tr>
