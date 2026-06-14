@@ -93,6 +93,22 @@
   .pollBarYes{ background: #6fae34; }
   .pollBarNo{ background: #c0563a; }
   .pollNote{ font-size: 0.8em; color: #556; margin: 0.6em 0 0; min-height: 1em; }
+
+  /* ===== BIO ===== */
+  .okraBio{
+    background: rgba(255,255,255,0.93);
+    border: 6px ridge #4f7a28;
+    border-radius: 12px;
+    box-shadow: 0 0 0 4px #8bbf4d, 0 6px 18px rgba(0,0,0,0.45);
+    padding: 1em 1.6em 1.3em;
+    max-width: 34em;
+    margin: 1.2em auto;
+    text-align: center;
+    font-family: "Comic Sans MS", "Comic Sans", "Chalkboard", cursive;
+    color: #2f4d18;
+  }
+  .okraBio h2{ margin: 0 0 0.5em; font-size: 1.6em; }
+  .okraBio p{ margin: 0.4em 0; font-size: 1.1em; line-height: 1.4; }
 </style>
 
 <div style="background: white; width: 100%">
@@ -119,6 +135,18 @@
   </table>
 </div>
 
+<!-- ===== BIO ===== -->
+<div style="background: white; width: 100%; padding: 0.6em 0;">
+  <div class="okraBio">
+    <h2>
+      <img class="wiggleOkra" style="height: 1.2em; vertical-align: middle;" src="Okr-white.png"/>
+      Meet Nikki
+      <img class="wiggleOkra" style="height: 1.2em; vertical-align: middle;" src="Okr-white.png"/>
+    </h2>
+    <p>🎂 Nikki BreAnne is <strong>25 years old</strong>, freshly harvested on her birthday, <strong>June 14th</strong>. 🌱</p>
+  </div>
+</div>
+
 <!-- ===== OKRA POLL — script (the poll markup lives in the grid's first row below) ===== -->
 <script type="module">
   /* ===== OKRA POLL — shared vote storage =====
@@ -142,7 +170,7 @@
     appId: "1:56095817168:web:6355809cae65797ca28dd5"
   };
 
-  const POLL_ID   = "heatdeath";
+  const POLL_ID   = "requiem";
   const VOTED_KEY = "okrafans_voted_" + POLL_ID;
   const usingFirebase = !firebaseConfig.apiKey.startsWith("PASTE_");
 
@@ -254,7 +282,7 @@
             📈 The galaxy&rsquo;s #1 okra-backed prediction market &mdash; put your slime where your mouth is! 🌱<br/>
             <span style="font-size: 0.78em; color: #778;">*not financial advice &middot; is okra advice &middot; positions settle at the heat death of the universe</span>
           </p>
-          <p class="pollQuestion">Will Nikki stream before the heat death of the universe?</p>
+          <p class="pollQuestion">Will Nikki complete Resident Evil: Requiem?</p>
           <div>
             <button id="voteYes" class="pollBtn">YES</button>
             <button id="voteNo"  class="pollBtn">NO</button>
