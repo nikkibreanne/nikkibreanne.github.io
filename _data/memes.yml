@@ -1,0 +1,93 @@
+# ===========================================================
+#  THE MEME WALL  🌱
+#
+#  Add a new meme:
+#    1. Drop the image into  assets/memes/
+#    2. Add an entry below (newest dates float to the top)
+#    3. Commit & push — GitHub Pages rebuilds automatically
+#
+#    - image: assets/memes/your-file.jpg   # path from the site root
+#      caption: short campy caption
+#      stream: which stream / vibe it's from
+#      date: 2026-06-14                     # YYYY-MM-DD, controls order
+# ===========================================================
+
+- image: assets/memes/tacoBellNikki.png
+  caption: live, laugh, taco bell 🌮
+  stream: the vault
+  date: 2020-07-31
+
+- image: assets/memes/nikki-is-okra-shirt.jpg
+  caption: nikki IS okra
+  stream: the vault
+  date: 2020-06-05
+
+- image: assets/memes/tshirtokramouth.jpg
+  caption: okra-mouth tee 👕
+  stream: the vault
+  date: 2020-06-05
+
+- image: assets/memes/okragone.gif
+  caption: okra gone 😩
+  stream: the vault
+  date: 2020-06-05
+
+- image: assets/memes/ghost.gif
+  caption: spooky season forever 👻
+  stream: the vault
+  date: 2020-06-04
+
+- image: assets/memes/ghostxnikki.jpg
+  caption: ghost x nikki collab
+  stream: the vault
+  date: 2020-06-04
+
+- image: assets/memes/nikkitractor.jpg
+  caption: tractor szn 🚜
+  stream: the vault
+  date: 2020-06-04
+
+- image: assets/memes/Princess_Nikki.jpg
+  caption: princess nikki 👑
+  stream: the vault
+  date: 2020-06-04
+
+- image: assets/memes/finalshim.png
+  caption: the final shim
+  stream: the vault
+  date: 2020-06-04
+
+- image: assets/memes/EZm5d_VUMAAWVKW.jpg
+  caption: certified okra moment
+  stream: the vault
+  date: 2020-06-04
+
+- image: assets/memes/nikkiInWonderland.gif
+  caption: nikki in wonderland 🍄
+  stream: the vault
+  date: 2019-10-22
+
+- image: assets/memes/bestStreamer.gif
+  caption: best streamer 🏆
+  stream: the vault
+  date: 2019-10-16
+
+- image: assets/memes/nikkibAhh.gif
+  caption: AHHHH
+  stream: the vault
+  date: 2019-08-01
+
+- image: assets/memes/passingThru.gif
+  caption: just passing thru 👋
+  stream: the vault
+  date: 2019-07-13
+
+- image: assets/memes/nikkibBlush.gif
+  caption: blush 🥹
+  stream: the vault
+  date: 2019-06-28
+
+- image: assets/memes/jifNotGif.png
+  caption: it's pronounced GIF, not JIF
+  stream: the vault
+  date: 2019-05-19

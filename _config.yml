@@ -1,1 +1,12 @@
-theme: jekyll-theme-cayman
+title: OKRAFANS
+description: Nikki BreAnne's campy, okra-powered corner of the internet 🌱
+url: "https://okrafans.com"
+
+# We ship our own campy layout in _layouts/, so no gem theme.
+# (Removing the old jekyll-theme-cayman, which was never actually used.)
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - vendor

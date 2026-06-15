@@ -1,0 +1,275 @@
+/* ===========================================================
+   OKRAFANS — campy, okra-powered styles
+   =========================================================== */
+
+body {
+  background-image: url("/assets/img/okra-raw.jpg");
+  margin: 0;
+  font-family: "Comic Sans MS", "Comic Neue", "Chalkboard", cursive;
+}
+
+/* ---------- animations ---------- */
+.blinking { animation: blinkingText 2s infinite; }
+@keyframes blinkingText {
+  0%   { color: #000; }
+  49%  { color: #000; }
+  60%  { color: transparent; }
+  99%  { color: transparent; }
+  100% { color: #000; }
+}
+
+.wiggleOkra { animation: wiggle 2s infinite; display: inline-block; }
+@keyframes wiggle {
+  0%   { transform: rotate(0deg); }
+  25%  { transform: rotate(25deg); }
+  50%  { transform: rotate(0deg); }
+  75%  { transform: rotate(-25deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.okraInline { height: 1.2em; vertical-align: middle; }
+
+/* ---------- header ---------- */
+.okraHeader {
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5em;
+  flex-wrap: wrap;
+  padding: 0.6em 1em 1em;
+}
+.okraHeader .okraSpin { height: 8em; }
+.okraHeaderTitle { text-align: center; }
+.presents { margin: 0.2em 0 0; font-size: 1.5em; color: #2f4d18; }
+.siteTitle { margin: 0; font-size: 5em; letter-spacing: 0.05em; }
+@media (max-width: 600px) {
+  .okraHeader .okraSpin { height: 4em; }
+  .siteTitle { font-size: 2.6em; }
+}
+
+/* ---------- bio ---------- */
+.okraBio {
+  background: rgba(255,255,255,0.93);
+  border: 6px ridge #4f7a28;
+  border-radius: 12px;
+  box-shadow: 0 0 0 4px #8bbf4d, 0 6px 18px rgba(0,0,0,0.45);
+  max-width: 34em;
+  margin: 1.4em auto;
+  padding: 1em 1.6em 1.3em;
+  text-align: center;
+  color: #2f4d18;
+}
+.okraBio h2 { margin: 0 0 0.5em; font-size: 1.6em; }
+.okraBio p { margin: 0.4em 0; font-size: 1.1em; line-height: 1.4; }
+
+/* ---------- poll (OKRAMARKET) ---------- */
+.pollSection { padding: 0.4em 1em; }
+.okraPoll {
+  background: rgba(255,255,255,0.93);
+  border: 6px ridge #4f7a28;
+  border-radius: 12px;
+  box-shadow: 0 0 0 4px #8bbf4d, 0 6px 18px rgba(0,0,0,0.45);
+  padding: 0.6em 1.6em 1.3em;
+  max-width: 34em;
+  margin: 0 auto;
+  text-align: center;
+  color: #2f4d18;
+}
+.okraPoll h2 { margin: 0.4em 0 0.2em; font-size: 1.6em; }
+.pollIntro { margin: 0 0 0.7em; font-style: italic; font-size: 0.98em; color: #4f7a28; line-height: 1.3; }
+.pollIntro small { font-size: 0.78em; color: #778; }
+.pollQuestion { font-size: 1.5em; font-weight: bold; color: #2f4d18; margin: 0.3em 0 0.9em; line-height: 1.25; }
+.pollBtn {
+  font-family: inherit;
+  font-size: 1.4em;
+  font-weight: bold;
+  margin: 0 0.4em;
+  padding: 0.3em 1.5em;
+  cursor: pointer;
+  border: 3px solid #2f4d18;
+  border-radius: 8px;
+  background: #8bbf4d;
+  color: #1c2f0e;
+  transition: transform 0.1s, background 0.15s;
+}
+.pollBtn:hover:enabled { background: #a6d96a; transform: scale(1.06); }
+.pollBtn:disabled { opacity: 0.45; cursor: not-allowed; }
+.pollResults { margin-top: 1em; color: #2f4d18; font-size: 1.05em; }
+.pollBar {
+  display: flex;
+  height: 1.7em;
+  border: 2px solid #2f4d18;
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 0.85em;
+  font-weight: bold;
+  background: #eee;
+}
+.pollBarYes, .pollBarNo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  white-space: nowrap;
+  transition: width 0.4s ease;
+}
+.pollBarYes { background: #6fae34; }
+.pollBarNo { background: #c0563a; }
+.pollNote { font-size: 0.8em; color: #556; margin: 0.6em 0 0; min-height: 1em; }
+
+/* ---------- meme wall ---------- */
+.memeWallSection { padding: 1.5em 1em 0.5em; text-align: center; }
+.memeWallHead {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.93);
+  border: 6px ridge #4f7a28;
+  border-radius: 12px;
+  box-shadow: 0 0 0 4px #8bbf4d, 0 6px 18px rgba(0, 0, 0, 0.45);
+  padding: 0.5em 1.6em 0.8em;
+  margin: 0 auto 1.4em;
+}
+.memeWallTitle { font-size: 2em; color: #2f4d18; margin: 0.15em 0; }
+.memeWallSub { color: #2f4d18; font-style: italic; margin: 0; }
+.memeWall {
+  column-count: 3;
+  column-gap: 1.2em;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+@media (max-width: 900px) { .memeWall { column-count: 2; } }
+@media (max-width: 600px) { .memeWall { column-count: 1; } }
+
+.memeCard {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  margin: 0 0 1.2em;
+  background: rgba(255,255,255,0.95);
+  border: 6px ridge #4f7a28;
+  border-radius: 12px;
+  box-shadow: 0 0 0 4px #8bbf4d, 0 6px 18px rgba(0,0,0,0.45);
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.memeCard:nth-child(odd)  { transform: rotate(-1.3deg); }
+.memeCard:nth-child(even) { transform: rotate(1.1deg); }
+.memeCard:hover {
+  transform: rotate(0) scale(1.03);
+  box-shadow: 0 0 0 4px #a6d96a, 0 10px 24px rgba(0,0,0,0.5);
+  position: relative;
+  z-index: 2;
+}
+.memeCard { cursor: pointer; }
+.memeCard img { width: 100%; display: block; }
+.memeCard figcaption {
+  font-family: inherit;
+  color: #2f4d18;
+  padding: 0.55em 0.7em 0.7em;
+  font-size: 1.05em;
+  line-height: 1.25;
+}
+.memeStream { display: block; font-size: 0.75em; color: #4f7a28; font-style: italic; margin-top: 0.25em; }
+
+/* ---------- meme lightbox ---------- */
+.lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 20, 5, 0.88);
+  z-index: 1000;
+  overflow: auto;
+}
+.lightbox.open { display: block; }
+.lbScroll {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5vh 2vw;
+  box-sizing: border-box;
+}
+.lbFigure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.lbFigure img {
+  display: block;
+  max-width: min(92vw, 600px);
+  max-height: 78vh;
+  width: auto;
+  height: auto;
+  background: #fff;
+  border: 6px ridge #4f7a28;
+  border-radius: 12px;
+  box-shadow: 0 0 0 4px #8bbf4d, 0 10px 30px rgba(0, 0, 0, 0.6);
+  cursor: zoom-in;
+}
+.lbFigure img.zoomed {
+  max-width: 95vw;
+  max-height: none;
+  cursor: zoom-out;
+}
+.lbCap {
+  font-family: "Comic Sans MS", "Comic Neue", "Chalkboard", cursive;
+  color: #eaffd6;
+  text-align: center;
+  margin-top: 0.8em;
+  font-size: 1.3em;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+}
+.lbCap .memeStream { color: #a6d96a; }
+.lbBtn {
+  position: fixed;
+  background: #8bbf4d;
+  color: #1c2f0e;
+  border: 3px solid #2f4d18;
+  border-radius: 50%;
+  font-family: "Comic Sans MS", "Comic Neue", "Chalkboard", cursive;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  transition: transform 0.1s, background 0.15s;
+  z-index: 1001;
+}
+.lbBtn:hover { background: #a6d96a; }
+.lbClose { top: 3vh; right: 3vw; width: 1.8em; height: 1.8em; font-size: 1.6em; }
+.lbClose:hover { transform: scale(1.1); }
+.lbPrev, .lbNext { top: 50%; transform: translateY(-50%); width: 2em; height: 2em; font-size: 2em; }
+.lbPrev { left: 2vw; }
+.lbNext { right: 2vw; }
+.lbPrev:hover, .lbNext:hover { transform: translateY(-50%) scale(1.1); }
+@media (max-width: 600px) {
+  .lbPrev, .lbNext { font-size: 1.4em; width: 1.7em; height: 1.7em; }
+}
+
+/* ---------- footer ---------- */
+.okraFooter { background: #fff; text-align: center; padding: 0 0 1.5em; margin-top: 1.5em; }
+.footerBanner { width: 100%; max-width: 1100px; display: block; margin: 0 auto 1em; }
+.footerInner { max-width: 46em; margin: 0 auto; padding: 0 1em; color: #2f4d18; }
+.footerTagline { font-style: italic; font-size: 1.2em; margin: 0.2em 0 0.9em; }
+.socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6em;
+  justify-content: center;
+  margin: 0.6em 0 1.1em;
+}
+.socials a {
+  font-family: inherit;
+  font-weight: bold;
+  text-decoration: none;
+  background: #8bbf4d;
+  color: #1c2f0e;
+  border: 3px solid #2f4d18;
+  border-radius: 999px;
+  padding: 0.35em 1.1em;
+  font-size: 1.05em;
+  transition: transform 0.1s, background 0.15s;
+}
+.socials a:hover { background: #a6d96a; transform: scale(1.06); }
+.footerSong { margin: 0.4em 0; }
+.footerSong a { font-size: 1.2em; color: #2f4d18; }
+.footerMeta { font-size: 0.85em; color: #4f7a28; margin: 0.9em 0 0; }

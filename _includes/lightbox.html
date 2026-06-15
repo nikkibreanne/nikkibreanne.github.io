@@ -1,0 +1,101 @@
+<!-- ===== MEME LIGHTBOX ===== -->
+<div id="lightbox" class="lightbox" aria-hidden="true">
+  <button id="lbClose" class="lbBtn lbClose" aria-label="Close">&times;</button>
+  <button id="lbPrev"  class="lbBtn lbPrev"  aria-label="Previous">&#8249;</button>
+  <button id="lbNext"  class="lbBtn lbNext"  aria-label="Next">&#8250;</button>
+  <div class="lbScroll">
+    <figure class="lbFigure" role="dialog" aria-modal="true" aria-label="Meme viewer">
+      <img id="lbImg" src="" alt=""/>
+      <figcaption class="lbCap">
+        <span id="lbCaption"></span>
+        <span id="lbStream" class="memeStream"></span>
+      </figcaption>
+    </figure>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const cards = Array.from(document.querySelectorAll('.memeCard'));
+    if (!cards.length) return;
+
+    const items = cards.map(function (c) {
+      const img = c.querySelector('img');
+      return {
+        src: img.getAttribute('src'),
+        caption: c.dataset.caption || '',
+        stream: c.dataset.stream || ''
+      };
+    });
+
+    const lb       = document.getElementById('lightbox');
+    const lbImg    = document.getElementById('lbImg');
+    const lbCap    = document.getElementById('lbCaption');
+    const lbStream = document.getElementById('lbStream');
+    let idx = -1;
+
+    function unzoom() {
+      lbImg.classList.remove('zoomed');
+      lbImg.style.width = '';
+    }
+    function show(i) {
+      idx = (i + items.length) % items.length;
+      const it = items[idx];
+      unzoom();
+      lbImg.src = it.src;
+      lbImg.alt = it.caption;
+      lbCap.textContent = it.caption;
+      lbStream.textContent = it.stream ? '📺 ' + it.stream : '';
+    }
+    function open(i) {
+      show(i);
+      lb.classList.add('open');
+      lb.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+    function close() {
+      lb.classList.remove('open');
+      lb.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      lbImg.src = '';
+      unzoom();
+    }
+    function next() { show(idx + 1); }
+    function prev() { show(idx - 1); }
+
+    cards.forEach(function (c, i) {
+      c.addEventListener('click', function () { open(i); });
+      c.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(i); }
+      });
+    });
+
+    document.getElementById('lbClose').addEventListener('click', close);
+    document.getElementById('lbNext').addEventListener('click', function (e) { e.stopPropagation(); next(); });
+    document.getElementById('lbPrev').addEventListener('click', function (e) { e.stopPropagation(); prev(); });
+
+    // click the image to toggle a bigger view — it simply enlarges (no panning);
+    // if it's taller than the screen, the overlay scrolls.
+    lbImg.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (lbImg.classList.toggle('zoomed')) {
+        lbImg.style.width = Math.round(lbImg.naturalWidth * 2) + 'px';
+        lb.scrollTop = 0;
+      } else {
+        lbImg.style.width = '';
+      }
+    });
+
+    // click the dark area around the meme to close
+    lb.addEventListener('click', function (e) {
+      if (e.target === lb || e.target.classList.contains('lbScroll')) close();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (!lb.classList.contains('open')) return;
+      if (e.key === 'Escape') close();
+      else if (e.key === 'ArrowRight') next();
+      else if (e.key === 'ArrowLeft') prev();
+    });
+  })();
+</script>

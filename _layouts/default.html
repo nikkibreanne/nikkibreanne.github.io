@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ page.title | default: site.title }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}"/>
+</head>
+<body>
+  <header class="okraHeader">
+    <div class="wiggleOkra"><img class="okraSpin" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt="okra"/></div>
+    <div class="okraHeaderTitle">
+      <p class="presents">Nikki BreAnne presents</p>
+      <h1 class="blinking siteTitle">OKRAFANS</h1>
+    </div>
+    <div class="wiggleOkra"><img class="okraSpin" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt="okra"/></div>
+  </header>
+
+  <main>
+    {{ content }}
+  </main>
+
+  <footer class="okraFooter">
+    <img class="footerBanner" src="{{ '/assets/img/takeMeHome.jpg' | relative_url }}" alt="take me home"/>
+    <div class="footerInner">
+      <nav class="socials" aria-label="Nikki's socials">
+        <a href="https://www.twitch.tv/nikkibreanne" target="_blank" rel="noopener noreferrer">🟣 Twitch</a>
+        <a href="https://www.youtube.com/c/nikkibreanne" target="_blank" rel="noopener noreferrer">▶️ YouTube</a>
+        <a href="https://www.instagram.com/nikkibreanne/?hl=en" target="_blank" rel="noopener noreferrer">📸 Instagram</a>
+        <a href="https://twitter.com/nikkibreanne" target="_blank" rel="noopener noreferrer">🐦 Twitter / X</a>
+        <a href="https://www.discord.gg/nikkibreanne" target="_blank" rel="noopener noreferrer">💬 Discord</a>
+        <a href="https://www.imdb.com/name/nm3363412/" target="_blank" rel="noopener noreferrer">🎬 IMDb</a>
+      </nav>
+      <p class="footerSong"><a href="https://www.youtube.com/watch?v=1vrEljMfXYo" target="_blank" rel="noopener noreferrer">🎵 Nikki&rsquo;s Favorite Song</a></p>
+    </div>
+  </footer>
+</body>
+</html>

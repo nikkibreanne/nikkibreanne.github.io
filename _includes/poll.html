@@ -1,0 +1,128 @@
+<section class="pollSection">
+  <div class="okraPoll" id="okramarket" style="scroll-margin-top: 1em;">
+    <h2>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+      <span class="">OKRAMARKET</span>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+    </h2>
+    <p class="pollIntro">
+      📈 The galaxy&rsquo;s #1 okra-backed prediction market!<br/>
+      <small>*not financial advice &middot; is okra advice &middot; positions settle at the heat death of the universe</small>
+    </p>
+    <p class="pollQuestion">Will Nikki complete Resident Evil: Requiem?</p>
+    <div>
+      <button id="voteYes" class="pollBtn">YES</button>
+      <button id="voteNo"  class="pollBtn">NO</button>
+    </div>
+    <div id="pollResults" class="pollResults">Consulting the cosmos&hellip;</div>
+    <p id="pollNote" class="pollNote"></p>
+  </div>
+</section>
+
+<!-- ===== OKRAMARKET poll logic — Firebase-backed shared vote storage ===== -->
+<script type="module">
+  /* The apiKey here is NOT a secret — it is meant to live in public client
+   * code. Votes are protected by the Realtime Database security rules. */
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3aWINWIBQ4rM_Ua2EOtr_Tw9rGhYdoS0",
+    authDomain: "okrafans.firebaseapp.com",
+    databaseURL: "https://okrafans-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "okrafans",
+    storageBucket: "okrafans.firebasestorage.app",
+    messagingSenderId: "56095817168",
+    appId: "1:56095817168:web:6355809cae65797ca28dd5"
+  };
+
+  const POLL_ID   = "requiem";
+  const VOTED_KEY = "okrafans_voted_" + POLL_ID;
+  const usingFirebase = !firebaseConfig.apiKey.startsWith("PASTE_");
+
+  const yesBtn  = document.getElementById("voteYes");
+  const noBtn   = document.getElementById("voteNo");
+  const results = document.getElementById("pollResults");
+  const note    = document.getElementById("pollNote");
+
+  function render(yes, no){
+    yes = yes || 0; no = no || 0;
+    const total = yes + no;
+    const yPct = total ? Math.round((yes / total) * 100) : 0;
+    const nPct = total ? 100 - yPct : 0;
+    results.innerHTML =
+      '<div class="pollBar">' +
+        '<div class="pollBarYes" style="width:' + yPct + '%">' + (yPct > 8 ? yPct + '%' : '') + '</div>' +
+        '<div class="pollBarNo"  style="width:' + nPct + '%">' + (nPct > 8 ? nPct + '%' : '') + '</div>' +
+      '</div>' +
+      '<div style="margin-top:0.45em;">' +
+        '✅ YES: ' + yes + ' &nbsp;&nbsp; ❌ NO: ' + no +
+        ' &nbsp;&nbsp; <span style="font-size:0.85em;">(' + total + ' okra-heads have spoken)</span>' +
+      '</div>';
+  }
+
+  function lock(msg){
+    yesBtn.disabled = true;
+    noBtn.disabled  = true;
+    if (msg) note.textContent = msg;
+  }
+
+  const priorVote = localStorage.getItem(VOTED_KEY);
+  if (priorVote){
+    lock("You already voted " + priorVote.toUpperCase() + ". No take-backs in this universe. 🌱");
+  }
+
+  if (usingFirebase){
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const { getDatabase, ref, runTransaction, onValue } =
+      await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+
+    const db      = getDatabase(initializeApp(firebaseConfig));
+    const pollRef = ref(db, "polls/" + POLL_ID);
+
+    onValue(pollRef, (snap) => {
+      const v = snap.val() || {};
+      render(v.yes, v.no);
+    }, () => {
+      results.textContent = "The okra database is napping. Refresh to try again.";
+    });
+
+    async function vote(choice){
+      if (localStorage.getItem(VOTED_KEY)) return;
+      localStorage.setItem(VOTED_KEY, choice);
+      lock("Thanks for voting " + choice.toUpperCase() + "! 🌟");
+      try {
+        await runTransaction(ref(db, "polls/" + POLL_ID + "/" + choice),
+          (cur) => (cur || 0) + 1);
+      } catch (e) {
+        localStorage.removeItem(VOTED_KEY);
+        yesBtn.disabled = false; noBtn.disabled = false;
+        note.textContent = "The okra gods rejected that vote. Try again in a moment.";
+      }
+    }
+    yesBtn.addEventListener("click", () => vote("yes"));
+    noBtn.addEventListener("click",  () => vote("no"));
+
+  } else {
+    /* ---------- DEMO MODE (no Firebase config yet) ---------- */
+    if (!priorVote){
+      note.textContent = "demo mode — votes counted only in this browser until the Firebase config is added";
+    }
+    const LOCAL_KEY = "okrafans_localcount_" + POLL_ID;
+    const readLocal = () => {
+      try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || { yes: 0, no: 0 }; }
+      catch (e) { return { yes: 0, no: 0 }; }
+    };
+    let counts = readLocal();
+    render(counts.yes, counts.no);
+
+    function vote(choice){
+      if (localStorage.getItem(VOTED_KEY)) return;
+      counts = readLocal();
+      counts[choice] = (counts[choice] || 0) + 1;
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(counts));
+      localStorage.setItem(VOTED_KEY, choice);
+      render(counts.yes, counts.no);
+      lock("Thanks for voting " + choice.toUpperCase() + "! 🌟 (demo mode)");
+    }
+    yesBtn.addEventListener("click", () => vote("yes"));
+    noBtn.addEventListener("click",  () => vote("no"));
+  }
+</script>
