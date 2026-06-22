@@ -22,7 +22,7 @@ title: OKRAFANS — Nikki BreAnne
   {% assign memes = site.data.memes | sort: "date" | reverse %}
   <div class="memeWall">
     {% for meme in memes %}
-    <figure class="memeCard" data-caption="{{ meme.caption | escape }}" data-stream="{{ meme.stream | escape }}" tabindex="0" role="button" aria-label="Expand: {{ meme.caption | escape }}">
+    <figure class="memeCard" data-caption="{{ meme.caption | escape }}" data-stream="{{ meme.stream | escape }}" data-full="{% if meme.full %}{{ meme.full | relative_url }}{% else %}{{ meme.image | relative_url }}{% endif %}" tabindex="0" role="button" aria-label="Expand: {{ meme.caption | escape }}">
       <img src="{{ meme.image | relative_url }}" alt="{{ meme.caption | escape }}" loading="lazy"/>
       <figcaption>
         {{ meme.caption }}

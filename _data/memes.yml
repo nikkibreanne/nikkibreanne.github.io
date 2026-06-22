@@ -6,11 +6,18 @@
 #    2. Add an entry below (newest dates float to the top)
 #    3. Commit & push — GitHub Pages rebuilds automatically
 #
-#    - image: assets/memes/your-file.jpg   # path from the site root
+#    - image: assets/memes/your-file.jpg   # path from the site root (wall thumbnail)
+#      full:  assets/memes/your-file-full.jpg  # optional full-res shown in the lightbox/zoom
 #      caption: short campy caption
 #      stream: which stream / vibe it's from
 #      date: 2026-06-14                     # YYYY-MM-DD, controls order
 # ===========================================================
+
+- image: assets/memes/nikki-asylum-album.jpg
+  full: assets/memes/nikki-asylum-album-full.jpg
+  caption: "NIKKI ASYLUM — Nikki, Grace & Leon's emo punk rock album 🦇🥀"
+  stream: the vault
+  date: 2026-06-21
 
 - image: assets/memes/tacoBellNikki.png
   caption: live, laugh, taco bell 🌮

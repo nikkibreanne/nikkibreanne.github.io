@@ -22,7 +22,8 @@
     const items = cards.map(function (c) {
       const img = c.querySelector('img');
       return {
-        src: img.getAttribute('src'),
+        // lightbox shows the full-res image (falls back to the wall thumb)
+        src: c.dataset.full || img.getAttribute('src'),
         caption: c.dataset.caption || '',
         stream: c.dataset.stream || ''
       };
