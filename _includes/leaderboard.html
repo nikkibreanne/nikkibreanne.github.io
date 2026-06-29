@@ -99,17 +99,16 @@
     lbBody.innerHTML = rowsHtml(entries);
   }
 
-  /* ---- demo fallback so the page renders before/without live data ---- */
-  const DEMO_SEASON = { id: "S1", name: "Harvest Moon" };
-  const DEMO_NAMES  = { "1": "PodSlayer", "2": "OkraMage", "3": "GreenArrow", "4": "OkraKnight", "5": "LeafMender", "6": "SproutScout" };
-  const DEMO_LB = {
-    "1": { damage: 184200 }, "2": { damage: 152800 }, "3": { damage: 131500 },
-    "4": { damage: 98600 },  "5": { damage: 74300 },  "6": { damage: 41250 }
-  };
-  function showDemo(reason){
-    Object.assign(nameCache, DEMO_NAMES);
-    note.innerHTML = '<span class="demoBadge">PREVIEW</span> sample leaderboard — ' + esc(reason);
-    renderBoard(DEMO_SEASON.id, DEMO_SEASON.name, DEMO_LB);
+  /* ---- clean states (read-only): connected-but-empty and offline ---- */
+  function showEmpty(msg){
+    note.textContent = "";
+    lbSeason.hidden = true;
+    lbBody.innerHTML = '<p class="lbEmpty">' + msg + '</p>';
+  }
+  function showOffline(){
+    note.textContent = "";
+    lbSeason.hidden = true;
+    lbBody.innerHTML = '<p class="lbEmpty">Live data is offline right now — reconnect to see it.</p>';
   }
 
   /* ---- live wiring (read-only) ---- */
@@ -127,19 +126,19 @@
   } catch (e) { db = null; }
 
   if(!db){
-    showDemo("offline preview — connect to the internet for live data");
+    showOffline();
   } else {
     onValue(ref(db, "config/season/current"), (snap) => {
       const season = snap.val();
       const seasonId = season && season.id;
-      if(!seasonId){ showDemo("no active season yet"); return; }
+      if(!seasonId){ showEmpty("🌱 No active season right now — check back when the next one begins!"); return; }
       if(seasonId !== subscribedSeason){
         subscribedSeason = seasonId;
         onValue(ref(db, "leaderboard/" + seasonId), (s) => {
           note.textContent = "";
           renderBoard(seasonId, season.name, s.val() || {});
-        }, () => showDemo("leaderboard unavailable"));
+        }, () => showOffline());
       }
-    }, () => showDemo("database unavailable"));
+    }, () => showOffline());
   }
 </script>

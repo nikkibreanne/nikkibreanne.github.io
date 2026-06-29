@@ -186,27 +186,14 @@
     }, 1000);
   }
 
-  /* ---- demo fallback so the layout renders before the bot writes data ---- */
-  const now = Date.now();
-  const DEMO = {
-    config: { phase: "signup", startsAt: now + (26 * 3600000), locksAt: now + (24 * 3600000) },
-    boss: { name: "The Ashen Warden", hp: 1000000, affix: "inferno", thresholds: { tank: 500, healer: 300, dps: 800 } },
-    signups: {
-      "1": { displayName: "OkraKnight", class: "Guardian", role: "tank", level: 18, roleRating: 320, power: 140, defense: 300, healing: 0,
-             equipped: { weapon: { name: "Bramble Maul", rarity: "rare" }, armor: { name: "Husk Plate", rarity: "epic" }, trinket: { name: "Seedstone", rarity: "uncommon" } } },
-      "2": { displayName: "LeafMender", class: "Mender", role: "healer", level: 16, roleRating: 280, power: 80, defense: 120, healing: 340,
-             equipped: { weapon: { name: "Sprout Wand", rarity: "rare" }, armor: { name: "Linen Robe", rarity: "common" }, trinket: null } },
-      "3": { displayName: "PodSlayer", class: "Berserker", role: "dps", level: 20, roleRating: 410, power: 430, defense: 150, healing: 0,
-             equipped: { weapon: { name: "Emberforged Blade", rarity: "epic" }, armor: { name: "Stalk Mail", rarity: "rare" }, trinket: { name: "Bloodroot Charm", rarity: "rare" } } },
-      "4": { displayName: "OkraMage", class: "Arcanist", role: "dps", level: 17, roleRating: 360, power: 390, defense: 90, healing: 0,
-             equipped: { weapon: { name: "Gourd Staff", rarity: "legendary" }, armor: { name: "Silkleaf Vestments", rarity: "rare" }, trinket: null } },
-      "5": { displayName: "GreenArrow", class: "Ranger", role: "dps", level: 15, roleRating: 240, power: 330, defense: 110, healing: 0,
-             equipped: { weapon: { name: "Vinewood Bow", rarity: "uncommon" }, armor: { name: "Field Leathers", rarity: "common" }, trinket: { name: "Hawkseed", rarity: "rare" } } }
-    }
-  };
-  function showDemo(reason){
-    renderRaid(DEMO);
-    raidNote.innerHTML = '<span class="demoBadge">PREVIEW</span> sample raid muster — ' + esc(reason);
+  /* ---- clean states (read-only): connected-but-empty and offline ---- */
+  function showEmpty(msg){
+    raidNote.textContent = "";
+    raidBody.innerHTML = '<p class="raidEmpty">' + msg + '</p>';
+  }
+  function showOffline(){
+    raidNote.textContent = "";
+    raidBody.innerHTML = '<p class="raidEmpty">Live data is offline right now — reconnect to see it.</p>';
   }
 
   /* ---- live wiring (read-only) ---- */
@@ -214,8 +201,8 @@
   let subscribed = null;
   function recompute(){
     const c = state.config;
-    if(!c || !c.seasonId || !c.weekId){ showDemo("no raid scheduled yet"); return; }
-    if(!state.boss){ showDemo("boss not set yet"); return; }
+    if(!c || !c.seasonId || !c.weekId){ showEmpty("🌱 No raid scheduled right now — chat while Nikki&rsquo;s live and watch for the next muster!"); return; }
+    if(!state.boss){ showEmpty("🌱 The boss hasn&rsquo;t been set yet — watch for the next muster!"); return; }
     raidNote.textContent = "";
     renderRaid({ config: c, boss: state.boss, signups: state.signups, team: state.team, combat: state.combat, result: state.result });
   }
@@ -232,7 +219,7 @@
   } catch (e) { db = null; }
 
   if(!db){
-    showDemo("offline preview — connect to the internet for live data");
+    showOffline();
   } else {
     onValue(ref(db, "config/raid"), (snap) => {
       state.config = snap.val();
@@ -247,7 +234,7 @@
         });
       }
       recompute();
-    }, () => showDemo("database unavailable"));
+    }, () => showOffline());
   }
 
   /* ---- character lookup (read-only) ---- */

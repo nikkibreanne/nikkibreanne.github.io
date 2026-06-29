@@ -122,23 +122,16 @@
     body.innerHTML = '<ol class="archiveList">' + rows.join("") + '</ol>';
   }
 
-  /* ---- demo fallback ---- */
-  const DEMO_SEASON = { id: "S1", name: "Harvest Moon" };
-  const DEMO_RAIDS = {
-    w1: { result: { downed: true,  bossHpRemaining: 0,      mvp: "3", status: "done" } },
-    w2: { result: { downed: false, bossHpRemaining: 184500, mvp: "1", status: "done" } },
-    w3: { result: { downed: true,  bossHpRemaining: 0,      mvp: "4", status: "done" }, combat: { bossMaxHp: 1400000 } }
-  };
-  const DEMO_BOSSES = {
-    w1: { name: "The Ashen Warden", hp: 1000000, status: "downed" },
-    w2: { name: "Gloomvine Tyrant",  hp: 1200000, status: "wiped" },
-    w3: { name: "Husk of the Deep",  hp: 1400000, status: "downed" }
-  };
-  const DEMO_NAMES = { "1": "OkraKnight", "3": "PodSlayer", "4": "OkraMage" };
-  function showDemo(reason){
-    Object.assign(nameCache, DEMO_NAMES);
-    note.innerHTML = '<span class="demoBadge">PREVIEW</span> sample past-raids — ' + esc(reason);
-    renderArchive(DEMO_SEASON.id, DEMO_SEASON.name, DEMO_RAIDS, DEMO_BOSSES);
+  /* ---- clean states (read-only): connected-but-empty and offline ---- */
+  function showEmpty(msg){
+    note.textContent = "";
+    seasonEl.hidden = true;
+    body.innerHTML = '<p class="archiveEmpty">' + msg + '</p>';
+  }
+  function showOffline(){
+    note.textContent = "";
+    seasonEl.hidden = true;
+    body.innerHTML = '<p class="archiveEmpty">Live data is offline right now — reconnect to see it.</p>';
   }
 
   /* ---- live wiring (read-only) ---- */
@@ -163,18 +156,18 @@
   } catch (e) { db = null; }
 
   if(!db){
-    showDemo("offline preview — connect to the internet for live data");
+    showOffline();
   } else {
     onValue(ref(db, "config/season/current"), (snap) => {
       const season = snap.val();
       const seasonId = season && season.id;
-      if(!seasonId){ showDemo("no active season yet"); return; }
+      if(!seasonId){ showEmpty("🌱 No active season right now — past raids will appear here once one begins!"); return; }
       state.seasonId = seasonId; state.seasonName = season.name || null;
       if(seasonId !== subscribedSeason){
         subscribedSeason = seasonId;
-        onValue(ref(db, "raids/" + seasonId),  (s) => { state.raids = s.val();  state.ready = true; recompute(); }, () => showDemo("raids unavailable"));
-        onValue(ref(db, "bosses/" + seasonId), (s) => { state.bosses = s.val(); state.ready = true; recompute(); }, () => showDemo("bosses unavailable"));
+        onValue(ref(db, "raids/" + seasonId),  (s) => { state.raids = s.val();  state.ready = true; recompute(); }, () => showOffline());
+        onValue(ref(db, "bosses/" + seasonId), (s) => { state.bosses = s.val(); state.ready = true; recompute(); }, () => showOffline());
       }
-    }, () => showDemo("database unavailable"));
+    }, () => showOffline());
   }
 </script>
