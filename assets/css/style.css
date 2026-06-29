@@ -275,6 +275,78 @@ body {
   .raidStatus.live { animation: none; }
 }
 
+/* ---------- okra-game cross nav (home + game pages) ---------- */
+.gameNavSection { padding: 0.4em 1em; }
+.gameNavCard {
+  background: rgba(255,255,255,0.93);
+  border: 6px ridge #4f7a28; border-radius: 12px;
+  box-shadow: 0 0 0 4px #8bbf4d, 0 6px 18px rgba(0,0,0,0.45);
+  max-width: 34em; margin: 0 auto 1.2em; padding: 0.5em 1.6em 1.1em;
+  text-align: center; color: #2f4d18;
+}
+.gameNavCard h2 { margin: 0.3em 0 0.2em; font-size: 1.5em; }
+.gameNavIntro { margin: 0 0 0.6em; font-style: italic; color: #4f7a28; line-height: 1.3; }
+.gameNav { display: flex; flex-wrap: wrap; gap: 0.5em; justify-content: center; margin: 0.8em 0 0.2em; }
+.gameNavLink {
+  font-family: inherit; font-weight: bold; text-decoration: none;
+  background: #8bbf4d; color: #1c2f0e; border: 3px solid #2f4d18;
+  border-radius: 999px; padding: 0.3em 1em; font-size: 0.95em;
+  transition: transform 0.1s, background 0.15s;
+}
+.gameNavLink:hover { background: #a6d96a; transform: scale(1.06); }
+.gameNavLink[aria-current="page"] { background: #2f4d18; color: #eaffd6; cursor: default; }
+.gameNote { font-size: 0.8em; color: #556; margin: 0.7em 0 0; min-height: 1em; }
+
+/* ---------- season leaderboard + past-raids archive (game) ---------- */
+.lbSection, .archiveSection { padding: 0.4em 1em; }
+.lbPanel, .archivePanel {
+  background: rgba(255,255,255,0.93);
+  border: 6px ridge #4f7a28; border-radius: 12px;
+  box-shadow: 0 0 0 4px #8bbf4d, 0 6px 18px rgba(0,0,0,0.45);
+  max-width: 36em; margin: 0 auto 1.2em; padding: 0.6em 1.6em 1.3em;
+  text-align: center; color: #2f4d18;
+}
+.lbPanel h2, .archivePanel h2 { margin: 0.4em 0 0.2em; font-size: 1.6em; }
+.lbIntro, .archiveIntro { margin: 0 0 0.5em; font-style: italic; font-size: 0.98em; color: #4f7a28; line-height: 1.3; }
+.lbIntro small, .archiveIntro small { font-size: 0.78em; color: #778; }
+.lbIntro code, .lbEmpty code, .archiveIntro code, .archiveEmpty code {
+  background: #2f4d18; color: #eaffd6; border-radius: 4px; padding: 0 0.35em; font-size: 0.92em;
+}
+.lbSeason, .archiveSeason {
+  display: inline-block; font-weight: bold; color: #1c2f0e;
+  background: #e0b341; border: 2px solid #2f4d18; border-radius: 999px;
+  padding: 0.12em 0.9em; margin: 0 0 0.7em; font-size: 0.88em;
+}
+.lbEmpty, .archiveEmpty { color: #4f7a28; font-style: italic; }
+
+/* leaderboard rows (extends the poll's bar idiom with its own classes) */
+.lbList { list-style: none; margin: 0.3em 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.45em; text-align: left; }
+.lbRow { display: flex; align-items: center; gap: 0.6em; background: #f7fbef; border: 2px solid #cfe6a8; border-radius: 8px; padding: 0.45em 0.6em; }
+.lbRow.lbTop { background: #eaf6d8; border-color: #8bbf4d; }
+.lbRank { font-size: 1.15em; font-weight: bold; min-width: 1.8em; text-align: center; color: #2f4d18; font-variant-numeric: tabular-nums; }
+.lbWho { flex: 1; min-width: 0; }
+.lbName { display: block; font-weight: bold; color: #2f4d18; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lbBar { display: block; height: 0.8em; margin-top: 0.28em; border: 1px solid #2f4d18; border-radius: 5px; overflow: hidden; background: #eee; }
+.lbBarFill { display: block; height: 100%; background: linear-gradient(90deg, #6fae34, #a6d96a); transition: width 0.5s ease; }
+.lbDmg { font-weight: bold; color: #2f4d18; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lbDmgLbl { font-size: 0.7em; font-weight: normal; color: #4f7a28; text-transform: uppercase; }
+
+/* past-raids archive items */
+.archiveList { list-style: none; margin: 0.3em 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.55em; text-align: left; }
+.archiveItem { background: #f7fbef; border: 2px solid #cfe6a8; border-radius: 8px; padding: 0.5em 0.7em; }
+.archiveTop { display: flex; justify-content: space-between; align-items: baseline; gap: 0.4em 0.6em; flex-wrap: wrap; }
+.archiveWeek { font-size: 0.76em; font-weight: bold; color: #4f7a28; text-transform: uppercase; letter-spacing: 0.04em; }
+.archiveBoss { font-size: 1.12em; font-weight: bold; color: #2f4d18; }
+.archiveBadge { font-size: 0.76em; font-weight: bold; border-radius: 999px; padding: 0.12em 0.7em; border: 2px solid #2f4d18; white-space: nowrap; }
+.archiveBadge.downed { background: #6fae34; color: #10240a; }
+.archiveBadge.wiped { background: #c0563a; color: #fff; }
+.archiveBadge.pending { background: #fff0d4; color: #6a4a10; border-color: #e0b341; }
+.archiveBadge.live { background: #e0843a; color: #fff; }
+.archiveMeta { margin-top: 0.3em; font-size: 0.85em; color: #4f7a28; display: flex; flex-wrap: wrap; gap: 0.15em 1em; }
+.archiveHp { font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) { .lbBarFill { transition: none; } }
+
 /* ---------- meme wall ---------- */
 .memeWallSection { padding: 1.5em 1em 0.5em; text-align: center; }
 .memeWallHead {
