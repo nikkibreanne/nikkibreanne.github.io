@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="okra">
+  <defs>
+    <linearGradient id="pod" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a6d96a"/>
+      <stop offset=".55" stop-color="#6fae34"/>
+      <stop offset="1" stop-color="#4f7a28"/>
+    </linearGradient>
+  </defs>
+  <!-- stem -->
+  <path d="M16 7 L16 3" fill="none" stroke="#3c5a1c" stroke-width="2.2" stroke-linecap="round"/>
+  <!-- calyx (cap) -->
+  <path d="M11 8 Q16 4 21 8 Q16 10.5 11 8 Z" fill="#5c8a2c" stroke="#2f4d18" stroke-width="1"/>
+  <!-- pod body -->
+  <path d="M16 7 C21 7 22.5 11.5 22 16 C21.4 21.5 19 27.5 16 30 C13 27.5 10.6 21.5 10 16 C9.5 11.5 11 7 16 7 Z"
+        fill="url(#pod)" stroke="#2f4d18" stroke-width="1.4" stroke-linejoin="round"/>
+  <!-- ridges -->
+  <path d="M16 9.5 C16 16 16 22 16 27.5" fill="none" stroke="#3c5a1c" stroke-width=".9" opacity=".5" stroke-linecap="round"/>
+  <path d="M13 11 C12.4 17 13 23 14.5 27" fill="none" stroke="#3c5a1c" stroke-width=".8" opacity=".4" stroke-linecap="round"/>
+  <path d="M19 11 C19.6 17 19 23 17.5 27" fill="none" stroke="#3c5a1c" stroke-width=".8" opacity=".4" stroke-linecap="round"/>
+  <!-- highlight -->
+  <path d="M13.4 12 C12.8 16 13.2 20 14 24" fill="none" stroke="#d8f0bf" stroke-width=".9" opacity=".55" stroke-linecap="round"/>
+</svg>
