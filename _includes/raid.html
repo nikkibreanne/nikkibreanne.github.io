@@ -153,7 +153,9 @@
         (typeof res.bossHpRemaining === "number"
           ? '<p class="raidResultLine">Final boss HP: ' + num(res.bossHpRemaining) + ' / ' + num(boss.hp) + '</p>' : "") +
         '<a class="pollBtn liveCta" href="' + LIVE_URL + '">▶ WATCH THE REPLAY</a>' +
-        teamStatsHtml(team, boss);
+        teamStatsHtml(team, boss) +
+        '<h3 class="rosterTitle">📜 Who Fought</h3>' +
+        rosterHtml(signups);
       return;
     }
 

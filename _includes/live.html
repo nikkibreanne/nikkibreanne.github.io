@@ -43,6 +43,7 @@
     appId: "1:56095817168:web:6355809cae65797ca28dd5"
   };
   let db = null, ref = null, onValue = null, get = null;
+  let serverOffset = 0; // Firebase server-clock correction (ms) for global sync
   const body = document.getElementById("battleBody");
   const note = document.getElementById("battleNote");
   const replayBtn = document.getElementById("replayBtn");
@@ -123,14 +124,14 @@
     const start = model.startsAt || Date.now();
     const total = model.events.length;
     function frame(){
-      const elapsed = Date.now() - start;
+      const elapsed = (Date.now() + serverOffset) - start;
       const visible = reduced ? total : Math.max(1, Math.min(total, Math.floor(elapsed / MS_PER_EVENT) + 1));
       renderBattle(model, visible);
       if(visible >= total){ if(timer){ clearInterval(timer); timer = null; } replayBtn.hidden = false; }
     }
     frame();
     if(!reduced) timer = setInterval(frame, 250);
-    replayBtn.onclick = () => { model.startsAt = Date.now(); replayBtn.hidden = true; play(model); };
+    replayBtn.onclick = () => { model.startsAt = Date.now() + serverOffset; replayBtn.hidden = true; play(model); };
   }
 
   /* ================= demo battle generator (seeded) =================
@@ -259,6 +260,9 @@
     if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
       try { dbMod.connectDatabaseEmulator(db, "127.0.0.1", 9000); console.info("kennyBot: using local Firebase emulator"); } catch (e) {}
     }
+    // Correct for client clock skew so every viewer worldwide reveals the same
+    // moment of the battle (synced to the server clock, not the local one).
+    onValue(ref(db, ".info/serverTimeOffset"), (s) => { serverOffset = s.val() || 0; });
   } catch (e) { db = null; }
 
   if(!db){
