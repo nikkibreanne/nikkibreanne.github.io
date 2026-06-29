@@ -166,7 +166,7 @@
       return { uid: uid, name: s.displayName || "Hero", class: s.class, role: s.role,
                maxHp: s.maxHp || (200 + (s.defense || 0)) };
     });
-    note.textContent = combat.status === "done" ? "replay" : "live";
+    note.textContent = "";
     play({ boss: { name: boss ? boss.name : "Boss", maxHp: combat.bossMaxHp || (boss ? boss.hp : 1000) },
            party: party, events: sortLog(combat.log), startsAt: combat.startsAt || Date.now() });
   }

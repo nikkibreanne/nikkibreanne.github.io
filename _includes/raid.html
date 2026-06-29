@@ -37,7 +37,7 @@
     messagingSenderId: "56095817168",
     appId: "1:56095817168:web:6355809cae65797ca28dd5"
   };
-  const LIVE_URL = "{{ '/live/' | relative_url }}";
+  const ARENA_URL = "{{ '/arena/' | relative_url }}";
 
   let db = null, ref = null, onValue = null, get = null;
   const raidBody  = document.getElementById("raidBody");
@@ -140,7 +140,7 @@
     if(phase === "live"){
       raidBody.innerHTML = bossHead +
         '<div class="raidStatus live">⚔️ THE RAID IS LIVE NOW!</div>' +
-        '<a class="pollBtn liveCta" href="' + LIVE_URL + '">▶ WATCH THE BATTLE</a>' +
+        '<a class="pollBtn liveCta" href="' + ARENA_URL + '">▶ WATCH THE BATTLE</a>' +
         teamStatsHtml(team, boss);
       return;
     }
@@ -152,7 +152,7 @@
           (downed ? "💀 BOSS DOWNED — the patch prevails! 🌱" : "🪦 WIPE — we&rsquo;ll get it next week.") + '</div>' +
         (typeof res.bossHpRemaining === "number"
           ? '<p class="raidResultLine">Final boss HP: ' + num(res.bossHpRemaining) + ' / ' + num(boss.hp) + '</p>' : "") +
-        '<a class="pollBtn liveCta" href="' + LIVE_URL + '">▶ WATCH THE REPLAY</a>' +
+        '<a class="pollBtn liveCta" href="' + ARENA_URL + '">▶ WATCH THE REPLAY</a>' +
         teamStatsHtml(team, boss) +
         '<h3 class="rosterTitle">📜 Who Fought</h3>' +
         rosterHtml(signups);

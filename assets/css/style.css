@@ -507,3 +507,8 @@ body {
 .footerSong { margin: 0.4em 0; }
 .footerSong a { font-size: 1.2em; color: #2f4d18; }
 .footerMeta { font-size: 0.85em; color: #4f7a28; margin: 0.9em 0 0; }
+
+/* Clickable site banner (back to home) + prominent raid-game CTA button. */
+.okraHomeLink { text-decoration: none; color: inherit; display: inline-block; cursor: pointer; }
+.okraHomeLink:hover .siteTitle { filter: brightness(1.15); }
+.gameCta { display: inline-block; margin: 0.2em auto 0.9em; font-size: 1.15em; padding: 0.55em 1.4em; }

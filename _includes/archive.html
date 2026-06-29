@@ -12,13 +12,13 @@
     <div id="archiveSeason" class="archiveSeason" hidden></div>
     <div id="archiveBody" class="archiveBody">Reading the chronicles&hellip;</div>
 
-    <!-- TODO follow-up: per-raid "watch the replay" deep-links. The /live/ player
+    <!-- TODO follow-up: per-raid "watch the replay" deep-links. The /arena/ player
          currently always reads config/raid (the ACTIVE week); replaying an
-         archived raid needs /live/ to accept ?s=<seasonId>&w=<weekId> query
+         archived raid needs /arena/ to accept ?s=<seasonId>&w=<weekId> query
          params and load raids/<s>/<w>/combat for that specific week instead. -->
     <nav class="gameNav" aria-label="Okra raid game pages">
       <a class="gameNavLink" href="{{ '/raid/' | relative_url }}">🌱 Muster</a>
-      <a class="gameNavLink" href="{{ '/live/' | relative_url }}">⚔️ Live</a>
+      <a class="gameNavLink" href="{{ '/arena/' | relative_url }}">⚔️ Arena</a>
       <a class="gameNavLink" href="{{ '/leaderboard/' | relative_url }}">🏆 Leaderboard</a>
       <a class="gameNavLink" href="{{ '/archive/' | relative_url }}" aria-current="page">📜 Past Raids</a>
     </nav>
