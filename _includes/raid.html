@@ -1,0 +1,279 @@
+<section class="raidSection">
+  <div class="raidPanel" id="raid" style="scroll-margin-top:1em;">
+    <h2>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+      <span>THE WEEKLY RAID</span>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+    </h2>
+    <p class="raidIntro">
+      🗡️ The whole okra-patch musters against one big bad. Chat while Nikki&rsquo;s live to grow your hero and gear up, then we field the team on raid night.<br/>
+      <small>*sign up in chat with <code>!raid</code> &middot; battle resolves automatically on the live page</small>
+    </p>
+    <div id="raidBody" class="raidBody">Summoning the boss&hellip;</div>
+    <p id="raidNote" class="raidNote"></p>
+  </div>
+
+  <div class="charCard" id="charCard">
+    <h3 class="charTitle">🌱 Your Okra-Hero</h3>
+    <form id="charForm" class="charForm" autocomplete="off">
+      <input id="charInput" class="charInput" type="text" placeholder="your twitch name" aria-label="Twitch username"/>
+      <button id="charBtn" class="pollBtn" type="submit">SUMMON</button>
+    </form>
+    <div id="charBody" class="charBody">Enter your Twitch name to view your hero.</div>
+  </div>
+</section>
+
+<!-- ===== Weekly raid — staging page (READ-ONLY Firebase render) =====
+     Phases (config/raid/phase): signup -> locked -> live -> done.
+     Reads the data-model contract (spec §9 + combat extensions):
+     config/raid, bosses/<s>/<w>, raids/<s>/<w>/{signups,team,combat,result}. -->
+<script type="module">
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3aWINWIBQ4rM_Ua2EOtr_Tw9rGhYdoS0",
+    authDomain: "okrafans.firebaseapp.com",
+    databaseURL: "https://okrafans-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "okrafans",
+    storageBucket: "okrafans.firebasestorage.app",
+    messagingSenderId: "56095817168",
+    appId: "1:56095817168:web:6355809cae65797ca28dd5"
+  };
+  const LIVE_URL = "{{ '/live/' | relative_url }}";
+
+  let db = null, ref = null, onValue = null, get = null;
+  const raidBody  = document.getElementById("raidBody");
+  const raidNote  = document.getElementById("raidNote");
+  const charBody  = document.getElementById("charBody");
+  const charForm  = document.getElementById("charForm");
+  const charInput = document.getElementById("charInput");
+
+  const ROLES = ["tank", "healer", "dps"];
+  const ROLE_LABEL = { tank: "🛡️ Tank", healer: "✚ Healer", dps: "⚔️ DPS" };
+
+  const num = (n) => (n || 0).toLocaleString("en-US");
+  const clampPct = (part, whole) => whole ? Math.max(0, Math.min(100, Math.round((part / whole) * 100))) : 0;
+  const esc = (s) => { const d = document.createElement("div"); d.textContent = (s == null ? "" : String(s)); return d.innerHTML; };
+
+  function countdownParts(target){
+    let ms = Math.max(0, (target || 0) - Date.now());
+    const d = Math.floor(ms / 86400000); ms -= d * 86400000;
+    const h = Math.floor(ms / 3600000);  ms -= h * 3600000;
+    const m = Math.floor(ms / 60000);    ms -= m * 60000;
+    const s = Math.floor(ms / 1000);
+    return { d, h, m, s };
+  }
+  function countdownHtml(target){
+    const c = countdownParts(target);
+    const cell = (v, l) => '<span class="cdCell"><span class="cdNum">' + String(v).padStart(2, "0") + '</span><span class="cdLbl">' + l + '</span></span>';
+    return '<div class="raidCountdown" data-target="' + (target || 0) + '">' +
+      (c.d > 0 ? cell(c.d, "days") : "") + cell(c.h, "hrs") + cell(c.m, "min") + cell(c.s, "sec") + '</div>';
+  }
+
+  /* Aggregate team stats from the signup roster (backend also stores team/;
+     the UI computes it as a fallback so it works either way). */
+  function computeTeam(signups){
+    const list = Object.values(signups || {});
+    const team = { count: list.length, byRole: { tank: 0, healer: 0, dps: 0 },
+                   roleRating: { tank: 0, healer: 0, dps: 0 }, power: 0, defense: 0, healing: 0 };
+    list.forEach((p) => {
+      if(team.byRole[p.role] != null) team.byRole[p.role]++;
+      if(team.roleRating[p.role] != null) team.roleRating[p.role] += (p.roleRating || 0);
+      team.power += (p.power || 0); team.defense += (p.defense || 0); team.healing += (p.healing || 0);
+    });
+    return team;
+  }
+
+  const RARITY = (r) => 'rarity-' + (r || "common");
+  function gearHtml(equipped){
+    const slots = ["weapon", "armor", "trinket"];
+    const items = slots.map((slot) => {
+      const it = equipped && equipped[slot];
+      if(!it) return '<span class="gearItem gearEmpty">' + slot + ': —</span>';
+      return '<span class="gearItem ' + RARITY(it.rarity) + '" title="' + esc(it.rarity) + ' ' + slot + '">' + esc(it.name) + '</span>';
+    });
+    return '<div class="gearList">' + items.join("") + '</div>';
+  }
+
+  function rosterHtml(signups){
+    const list = Object.values(signups || {});
+    if(!list.length) return '<p class="raidEmpty">No heroes signed up yet — type <code>!raid</code> in chat to muster! 🌱</p>';
+    list.sort((a, b) => (b.roleRating || 0) - (a.roleRating || 0));
+    return '<div class="roster">' + list.map((p) =>
+      '<div class="rosterItem">' +
+        '<div class="rosterWho"><span class="rosterName">' + esc(p.displayName || "Hero") + '</span>' +
+          '<span class="rosterMeta">' + (ROLE_LABEL[p.role] || esc(p.role || "")) + ' &middot; ' + esc(p.class || "") + ' &middot; Lv ' + num(p.level || 0) + '</span></div>' +
+        gearHtml(p.equipped) +
+      '</div>'
+    ).join("") + '</div>';
+  }
+
+  function teamStatsHtml(team, boss){
+    const tiles =
+      '<div class="teamStats">' +
+        '<div class="statTile"><span class="statVal">⚔️ ' + num(team.power) + '</span><span class="statLbl">Team Power</span></div>' +
+        '<div class="statTile"><span class="statVal">🛡️ ' + num(team.defense) + '</span><span class="statLbl">Team Defense</span></div>' +
+        '<div class="statTile"><span class="statVal">✚ ' + num(team.healing) + '</span><span class="statLbl">Team Healing</span></div>' +
+        '<div class="statTile"><span class="statVal">👥 ' + num(team.count) + '</span><span class="statLbl">Heroes</span></div>' +
+      '</div>';
+    const meters = ROLES.map((role) => {
+      const cur = (team.roleRating && team.roleRating[role]) || 0;
+      const need = (boss && boss.thresholds && boss.thresholds[role]) || 0;
+      const met = cur >= need, pct = need ? clampPct(cur, need) : 100;
+      return '<div class="roleMeter ' + (met ? "met" : "unmet") + '">' +
+          '<div class="roleHead"><span>' + ROLE_LABEL[role] + ' (' + num((team.byRole && team.byRole[role]) || 0) + ')</span>' +
+            '<span>' + num(cur) + ' / ' + num(need) + ' ' + (met ? "✓" : "✗") + '</span></div>' +
+          '<div class="roleBar"><div class="roleBarFill" style="width:' + pct + '%"></div></div>' +
+          (met ? "" : '<div class="roleWarn">need more ' + role + 's!</div>') +
+        '</div>';
+    }).join("");
+    return tiles + '<div class="roleMeters">' + meters + '</div>';
+  }
+
+  function renderRaid(model){
+    const cfg = model.config || {}, boss = model.boss, signups = model.signups || {};
+    if(!boss){ raidBody.innerHTML = '<p class="raidEmpty">No raid scheduled right now. Check back soon! 🌱</p>'; return; }
+    const team = model.team || computeTeam(signups);
+    const phase = cfg.phase || "signup";
+
+    const bossHead = '<div class="bossHead"><span class="bossName">' + esc(boss.name) + '</span>' +
+      (boss.affix ? '<span class="affixTag">affix: ' + esc(boss.affix) + '</span>' : "") + '</div>';
+
+    if(phase === "live"){
+      raidBody.innerHTML = bossHead +
+        '<div class="raidStatus live">⚔️ THE RAID IS LIVE NOW!</div>' +
+        '<a class="pollBtn liveCta" href="' + LIVE_URL + '">▶ WATCH THE BATTLE</a>' +
+        teamStatsHtml(team, boss);
+      return;
+    }
+    if(phase === "done"){
+      const res = model.result || (model.combat && model.combat.result) || {};
+      const downed = res.downed;
+      raidBody.innerHTML = bossHead +
+        '<div class="raidStatus ' + (downed ? "downed" : "wiped") + '">' +
+          (downed ? "💀 BOSS DOWNED — the patch prevails! 🌱" : "🪦 WIPE — we&rsquo;ll get it next week.") + '</div>' +
+        (typeof res.bossHpRemaining === "number"
+          ? '<p class="raidResultLine">Final boss HP: ' + num(res.bossHpRemaining) + ' / ' + num(boss.hp) + '</p>' : "") +
+        '<a class="pollBtn liveCta" href="' + LIVE_URL + '">▶ WATCH THE REPLAY</a>' +
+        teamStatsHtml(team, boss);
+      return;
+    }
+
+    // signup / locked
+    const heading = phase === "locked"
+      ? '<div class="raidPhaseTag locked">🔒 Roster locked — battle imminent</div>'
+      : '<div class="raidPhaseTag signup">📣 Muster open — sign up in chat with <code>!raid</code></div>';
+    raidBody.innerHTML = bossHead + heading +
+      '<p class="cdCaption">Raid night begins in</p>' +
+      countdownHtml(cfg.startsAt) +
+      teamStatsHtml(team, boss) +
+      '<h3 class="rosterTitle">📜 The Roster</h3>' +
+      rosterHtml(signups);
+    startCountdownTicker();
+  }
+
+  /* tick every countdown element each second */
+  let cdTimer = null;
+  function startCountdownTicker(){
+    if(cdTimer) return;
+    cdTimer = setInterval(() => {
+      document.querySelectorAll(".raidCountdown").forEach((node) => {
+        const t = Number(node.getAttribute("data-target")) || 0;
+        const c = countdownParts(t);
+        const cell = (v, l) => '<span class="cdCell"><span class="cdNum">' + String(v).padStart(2, "0") + '</span><span class="cdLbl">' + l + '</span></span>';
+        node.innerHTML = (c.d > 0 ? cell(c.d, "days") : "") + cell(c.h, "hrs") + cell(c.m, "min") + cell(c.s, "sec");
+      });
+    }, 1000);
+  }
+
+  /* ---- demo fallback so the layout renders before the bot writes data ---- */
+  const now = Date.now();
+  const DEMO = {
+    config: { phase: "signup", startsAt: now + (26 * 3600000), locksAt: now + (24 * 3600000) },
+    boss: { name: "The Ashen Warden", hp: 1000000, affix: "inferno", thresholds: { tank: 500, healer: 300, dps: 800 } },
+    signups: {
+      "1": { displayName: "OkraKnight", class: "Guardian", role: "tank", level: 18, roleRating: 320, power: 140, defense: 300, healing: 0,
+             equipped: { weapon: { name: "Bramble Maul", rarity: "rare" }, armor: { name: "Husk Plate", rarity: "epic" }, trinket: { name: "Seedstone", rarity: "uncommon" } } },
+      "2": { displayName: "LeafMender", class: "Mender", role: "healer", level: 16, roleRating: 280, power: 80, defense: 120, healing: 340,
+             equipped: { weapon: { name: "Sprout Wand", rarity: "rare" }, armor: { name: "Linen Robe", rarity: "common" }, trinket: null } },
+      "3": { displayName: "PodSlayer", class: "Berserker", role: "dps", level: 20, roleRating: 410, power: 430, defense: 150, healing: 0,
+             equipped: { weapon: { name: "Emberforged Blade", rarity: "epic" }, armor: { name: "Stalk Mail", rarity: "rare" }, trinket: { name: "Bloodroot Charm", rarity: "rare" } } },
+      "4": { displayName: "OkraMage", class: "Arcanist", role: "dps", level: 17, roleRating: 360, power: 390, defense: 90, healing: 0,
+             equipped: { weapon: { name: "Gourd Staff", rarity: "legendary" }, armor: { name: "Silkleaf Vestments", rarity: "rare" }, trinket: null } },
+      "5": { displayName: "GreenArrow", class: "Ranger", role: "dps", level: 15, roleRating: 240, power: 330, defense: 110, healing: 0,
+             equipped: { weapon: { name: "Vinewood Bow", rarity: "uncommon" }, armor: { name: "Field Leathers", rarity: "common" }, trinket: { name: "Hawkseed", rarity: "rare" } } }
+    }
+  };
+  function showDemo(reason){
+    renderRaid(DEMO);
+    raidNote.innerHTML = '<span class="demoBadge">PREVIEW</span> sample raid muster — ' + esc(reason);
+  }
+
+  /* ---- live wiring (read-only) ---- */
+  const state = { config: null, boss: null, signups: null, team: null, combat: null, result: null };
+  let subscribed = null;
+  function recompute(){
+    const c = state.config;
+    if(!c || !c.seasonId || !c.weekId){ showDemo("no raid scheduled yet"); return; }
+    if(!state.boss){ showDemo("boss not set yet"); return; }
+    raidNote.textContent = "";
+    renderRaid({ config: c, boss: state.boss, signups: state.signups, team: state.team, combat: state.combat, result: state.result });
+  }
+  try {
+    const appMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const dbMod  = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+    ({ ref, onValue, get } = dbMod);
+    db = dbMod.getDatabase(appMod.initializeApp(firebaseConfig));
+    // Local dev only: when served from localhost, read the Firebase emulator
+    // (same namespace) so the site renders the backend's local game state.
+    if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+      try { dbMod.connectDatabaseEmulator(db, "127.0.0.1", 9000); console.info("kennyBot: using local Firebase emulator"); } catch (e) {}
+    }
+  } catch (e) { db = null; }
+
+  if(!db){
+    showDemo("offline preview — connect to the internet for live data");
+  } else {
+    onValue(ref(db, "config/raid"), (snap) => {
+      state.config = snap.val();
+      const c = state.config, key = c && (c.seasonId + "/" + c.weekId);
+      if(key && key !== subscribed){
+        subscribed = key;
+        onValue(ref(db, "bosses/" + key), (s) => { state.boss = s.val(); recompute(); });
+        onValue(ref(db, "raids/" + key), (s) => {
+          const r = s.val() || {};
+          state.signups = r.signups; state.team = r.team; state.combat = r.combat; state.result = r.result;
+          recompute();
+        });
+      }
+      recompute();
+    }, () => showDemo("database unavailable"));
+  }
+
+  /* ---- character lookup (read-only) ---- */
+  function noHero(name){
+    return '<p class="charEmpty">No hero found for <strong>' + esc(name) + '</strong>. ' +
+      'Type <code>!create &lt;class&gt;</code> in chat to begin! 🌱</p>';
+  }
+  function renderHero(p){
+    const rows = [["Class", esc(p.class || "—")], ["Role", esc(p.role || "—")], ["Level", num(p.level || 0)], ["EXP", num(p.exp || 0)]];
+    return '<div class="heroName">' + esc(p.displayName || "Okra-Hero") + '</div>' +
+      '<div class="heroStats">' + rows.map((r) => '<div class="charStat"><span>' + r[0] + '</span><span>' + r[1] + '</span></div>').join("") + '</div>' +
+      (p.equipped ? gearHtml(p.equipped) : "");
+  }
+  async function lookupHero(rawName){
+    const name = (rawName || "").trim().replace(/^@/, "");
+    if(!name){ charBody.textContent = "Enter your Twitch name to view your hero."; return; }
+    if(!db){ charBody.textContent = "Hero lookup needs an internet connection."; return; }
+    charBody.textContent = "Consulting the okra-archives…";
+    try {
+      let userId = /^\d+$/.test(name) ? name : null;
+      if(!userId){ const idSnap = await get(ref(db, "usernames/" + name.toLowerCase())); userId = idSnap.val(); }
+      if(!userId){ charBody.innerHTML = noHero(name); return; }
+      const pSnap = await get(ref(db, "players/" + userId));
+      const p = pSnap.val();
+      charBody.innerHTML = p ? renderHero(p) : noHero(name);
+    } catch (e) { charBody.innerHTML = noHero(name); }
+  }
+  charForm.addEventListener("submit", (e) => { e.preventDefault(); lookupHero(charInput.value); });
+  const deepLink = new URLSearchParams(location.search).get("u");
+  if(deepLink){ charInput.value = deepLink; lookupHero(deepLink); }
+</script>

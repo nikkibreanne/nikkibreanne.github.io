@@ -1,0 +1,276 @@
+<section class="battleSection">
+  <div class="battleStage" id="battle">
+    <h2>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+      <span>RAID — LIVE</span>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+    </h2>
+    <div id="battleBody" class="battleBody">Entering the arena&hellip;</div>
+    <div class="battleControls">
+      <button id="replayBtn" class="pollBtn" type="button" hidden>↻ REPLAY FROM START</button>
+      <a class="pollBtn liveCta" href="{{ '/raid/' | relative_url }}">← back to muster</a>
+    </div>
+    <p id="battleNote" class="raidNote"></p>
+  </div>
+</section>
+
+<!-- ===== Live boss battle — READ-ONLY combat-log PLAYER =====
+     The backend (kennyBot) computes an automated, seeded, turn-based battle and
+     writes it as an append-only event log. This page is a "replay player": it
+     reveals events on a timer synced to combat.startsAt, so everyone sees the
+     same moment, latecomers catch up, and a finished battle is re-watchable.
+
+     Combat-log event contract (raids/<s>/<w>/combat):
+       { seed, status: pending|live|done, startsAt, bossMaxHp,
+         result: { downed, bossHpRemaining, mvp },
+         log: {                       // keyed by ascending integer sequence
+           "0": { type:"start", text },
+           "1": { type:"turn", n:1 },
+           "2": { type:"action", side:"party"|"enemy", actor:<uid|"boss">,
+                  actorName, ability, kind:"damage"|"heal"|"aoe"|"buff",
+                  target:<uid|"boss">, targetName, amount, crit:bool, text },
+           "N": { type:"end", outcome:"victory"|"defeat", text } } }
+     The UI recomputes HP bars by replaying revealed amounts; if the backend also
+     stamps running HP on events it will be preferred. -->
+<script type="module">
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3aWINWIBQ4rM_Ua2EOtr_Tw9rGhYdoS0",
+    authDomain: "okrafans.firebaseapp.com",
+    databaseURL: "https://okrafans-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "okrafans",
+    storageBucket: "okrafans.firebasestorage.app",
+    messagingSenderId: "56095817168",
+    appId: "1:56095817168:web:6355809cae65797ca28dd5"
+  };
+  let db = null, ref = null, onValue = null, get = null;
+  const body = document.getElementById("battleBody");
+  const note = document.getElementById("battleNote");
+  const replayBtn = document.getElementById("replayBtn");
+
+  const MS_PER_EVENT = 1200;
+  const ROLE_LABEL = { tank: "🛡️", healer: "✚", dps: "⚔️" };
+  const num = (n) => (n || 0).toLocaleString("en-US");
+  const clampPct = (part, whole) => whole ? Math.max(0, Math.min(100, Math.round((part / whole) * 100))) : 0;
+  const esc = (s) => { const d = document.createElement("div"); d.textContent = (s == null ? "" : String(s)); return d.innerHTML; };
+
+  /* ---------- render a battle state up to `n` revealed events ---------- */
+  function renderBattle(model, n){
+    let bossHp = model.boss.maxHp;
+    const hp = {}; model.party.forEach((p) => { hp[p.uid] = p.maxHp; });
+    let turn = 0, outcome = null;
+    const lines = [];
+    for(let i = 0; i < n; i++){
+      const e = model.events[i];
+      if(e.type === "start"){ lines.push({ cls: "system", text: e.text }); continue; }
+      if(e.type === "turn"){ turn = e.n; lines.push({ cls: "turnmark", text: "— Turn " + e.n + " —" }); continue; }
+      if(e.type === "end"){ outcome = e.outcome; lines.push({ cls: e.outcome === "victory" ? "victory" : "defeat", text: e.text }); continue; }
+      // action
+      if(e.kind === "damage"){
+        if(e.target === "boss") bossHp = Math.max(0, bossHp - (e.amount || 0));
+        else if(hp[e.target] != null) hp[e.target] = Math.max(0, hp[e.target] - (e.amount || 0));
+      } else if(e.kind === "aoe"){
+        model.party.forEach((p) => { if(hp[p.uid] > 0) hp[p.uid] = Math.max(0, hp[p.uid] - (e.amount || 0)); });
+      } else if(e.kind === "heal"){
+        const m = model.party.find((p) => p.uid === e.target);
+        if(m) hp[e.target] = Math.min(m.maxHp, (hp[e.target] || 0) + (e.amount || 0));
+      }
+      let cls = (e.side === "enemy" ? "enemy" : "party");
+      if(e.kind === "heal") cls += " heal";
+      if(e.crit) cls += " crit";
+      lines.push({ cls: cls, text: e.text });
+    }
+
+    const bossPct = clampPct(bossHp, model.boss.maxHp);
+    const aliveCount = model.party.filter((p) => hp[p.uid] > 0).length;
+
+    const partyCards = model.party.map((p) => {
+      const cur = hp[p.uid] || 0, pct = clampPct(cur, p.maxHp), down = cur <= 0;
+      return '<div class="pmember ' + (down ? "down" : "") + '">' +
+          '<div class="pmHead">' + (ROLE_LABEL[p.role] || "") + ' <span class="pmName">' + esc(p.name) + '</span>' +
+            (down ? '<span class="pmDown">DOWN</span>' : '<span class="pmHp">' + num(cur) + "/" + num(p.maxHp) + '</span>') + '</div>' +
+          '<div class="pmBar"><div class="pmBarFill" style="width:' + pct + '%"></div></div>' +
+        '</div>';
+    }).join("");
+
+    const outcomeHtml = outcome
+      ? '<div class="raidStatus ' + (outcome === "victory" ? "downed" : "wiped") + ' battleOutcome">' +
+          (outcome === "victory" ? "💀 VICTORY — " + esc(model.boss.name) + " falls! 🌱" : "🪦 DEFEAT — the patch is wiped.") + '</div>'
+      : "";
+
+    body.innerHTML =
+      outcomeHtml +
+      '<div class="bossPanel">' +
+        '<div class="bossHead"><span class="bossName">' + esc(model.boss.name) + '</span>' +
+          '<span class="turnCounter">Turn ' + turn + '</span></div>' +
+        '<div class="hpBar bossHpBar"><div class="hpBarFill" style="width:' + bossPct + '%"></div>' +
+          '<div class="hpBarLabel">' + bossPct + '% &middot; ' + num(bossHp) + " / " + num(model.boss.maxHp) + ' HP</div></div>' +
+      '</div>' +
+      '<div class="partyGrid">' + partyCards + '</div>' +
+      '<div class="partyAlive">👥 ' + aliveCount + " / " + model.party.length + ' heroes standing</div>' +
+      '<div class="combatLog" id="combatLog">' +
+        lines.map((l) => '<div class="logLine ' + l.cls + '">' + l.text + '</div>').join("") +
+      '</div>';
+
+    const log = document.getElementById("combatLog");
+    if(log) log.scrollTop = log.scrollHeight;
+  }
+
+  /* ---------- timed reveal (synced to startsAt; replay-friendly) ---------- */
+  let timer = null;
+  function play(model){
+    if(timer){ clearInterval(timer); timer = null; }
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const start = model.startsAt || Date.now();
+    const total = model.events.length;
+    function frame(){
+      const elapsed = Date.now() - start;
+      const visible = reduced ? total : Math.max(1, Math.min(total, Math.floor(elapsed / MS_PER_EVENT) + 1));
+      renderBattle(model, visible);
+      if(visible >= total){ if(timer){ clearInterval(timer); timer = null; } replayBtn.hidden = false; }
+    }
+    frame();
+    if(!reduced) timer = setInterval(frame, 250);
+    replayBtn.onclick = () => { model.startsAt = Date.now(); replayBtn.hidden = true; play(model); };
+  }
+
+  /* ================= demo battle generator (seeded) =================
+     A compact reference of the automated turn engine the backend owns:
+     initiative = party then boss each round, each actor randomly picks an
+     off-cooldown ability, seeded RNG drives hit/crit/variance. */
+  function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  const ABIL = {
+    Guardian:  [{ n: "Shield Bash", k: "damage", p: 0.8, cd: 0 }, { n: "Bulwark Slam", k: "damage", p: 1.4, cd: 3 }],
+    Mender:    [{ n: "Mend", k: "heal", p: 1.0, cd: 0 }, { n: "Renewing Bloom", k: "heal", p: 2.0, cd: 3 }, { n: "Smite", k: "damage", p: 0.6, cd: 0 }],
+    Berserker: [{ n: "Cleave", k: "damage", p: 1.0, cd: 0 }, { n: "Rampage", k: "damage", p: 2.0, cd: 3 }],
+    Arcanist:  [{ n: "Firebolt", k: "damage", p: 1.0, cd: 0 }, { n: "Meteor", k: "damage", p: 2.4, cd: 4 }],
+    Ranger:    [{ n: "Aimed Shot", k: "damage", p: 1.0, cd: 0 }, { n: "Volley", k: "damage", p: 1.6, cd: 3 }]
+  };
+  const BOSS_ABIL = [{ n: "Cinder Swipe", k: "damage", p: 1.0, cd: 0 }, { n: "Infernal Nova", k: "aoe", p: 0.7, cd: 3 }];
+
+  function genDemoBattle(){
+    const rng = mulberry32(20260629);
+    const pick = (arr) => arr[Math.floor(rng() * arr.length)];
+    const vary = (x) => Math.round(x * (0.8 + rng() * 0.4));
+    const party = [
+      { uid: "1", name: "OkraKnight", class: "Guardian", role: "tank", maxHp: 520, atk: 26 },
+      { uid: "2", name: "LeafMender", class: "Mender", role: "healer", maxHp: 360, atk: 18, heal: 70 },
+      { uid: "3", name: "PodSlayer", class: "Berserker", role: "dps", maxHp: 400, atk: 64 },
+      { uid: "4", name: "OkraMage", class: "Arcanist", role: "dps", maxHp: 300, atk: 70 },
+      { uid: "5", name: "GreenArrow", class: "Ranger", role: "dps", maxHp: 330, atk: 52 }
+    ];
+    const boss = { name: "The Ashen Warden", maxHp: 2600, atk: 90 };
+    const hp = {}; party.forEach((p) => { hp[p.uid] = p.maxHp; });
+    let bossHp = boss.maxHp;
+    const cd = {};
+    const events = [{ type: "start", text: "🔥 " + boss.name + " awakens, wreathed in cinders!" }];
+
+    const ready = (key, abil) => !cd[key + abil.n] || cd[key + abil.n] <= 0;
+    const tickCd = () => { for(const k in cd){ if(cd[k] > 0) cd[k]--; } };
+
+    let turn = 0;
+    while(bossHp > 0 && party.some((p) => hp[p.uid] > 0) && turn < 20){
+      turn++;
+      events.push({ type: "turn", n: turn });
+      // party acts
+      for(const p of party){
+        if(hp[p.uid] <= 0) continue;
+        if(bossHp <= 0) break;
+        let abil = pick(ABIL[p.class].filter((a) => ready(p.uid, a))) || ABIL[p.class][0];
+        cd[p.uid + abil.n] = abil.cd;
+        if(abil.k === "heal"){
+          const hurt = party.filter((q) => hp[q.uid] > 0).sort((a, b) => (hp[a.uid] / a.maxHp) - (hp[b.uid] / b.maxHp))[0];
+          const amt = vary((p.heal || 40) * abil.p);
+          hp[hurt.uid] = Math.min(hurt.maxHp, hp[hurt.uid] + amt);
+          events.push({ type: "action", side: "party", actor: p.uid, actorName: p.name, ability: abil.n, kind: "heal",
+            target: hurt.uid, targetName: hurt.name, amount: amt,
+            text: "✚ " + p.name + " casts " + abil.n + " on " + hurt.name + " (+" + amt + " HP)" });
+        } else {
+          let amt = vary(p.atk * abil.p);
+          const crit = rng() < 0.16; if(crit) amt = Math.round(amt * 1.8);
+          bossHp = Math.max(0, bossHp - amt);
+          events.push({ type: "action", side: "party", actor: p.uid, actorName: p.name, ability: abil.n, kind: "damage",
+            target: "boss", targetName: boss.name, amount: amt, crit: crit,
+            text: "⚔️ " + p.name + " uses " + abil.n + (crit ? " — CRIT!" : "") + " on " + boss.name + " for " + amt + "!" });
+        }
+      }
+      if(bossHp <= 0) break;
+      // boss acts
+      tickCd();
+      let babil = pick(BOSS_ABIL.filter((a) => ready("boss", a))) || BOSS_ABIL[0];
+      cd["boss" + babil.n] = babil.cd;
+      if(babil.k === "aoe"){
+        const amt = vary(boss.atk * babil.p);
+        party.forEach((q) => { if(hp[q.uid] > 0) hp[q.uid] = Math.max(0, hp[q.uid] - amt); });
+        events.push({ type: "action", side: "enemy", actor: "boss", actorName: boss.name, ability: babil.n, kind: "aoe",
+          target: "party", targetName: "the party", amount: amt,
+          text: "💥 " + boss.name + " unleashes " + babil.n + " — " + amt + " to ALL heroes!" });
+      } else {
+        const alive = party.filter((q) => hp[q.uid] > 0);
+        const tgt = (alive.find((q) => q.role === "tank") && rng() < 0.6) ? alive.find((q) => q.role === "tank") : pick(alive);
+        let amt = vary(boss.atk * babil.p);
+        const crit = rng() < 0.12; if(crit) amt = Math.round(amt * 1.7);
+        hp[tgt.uid] = Math.max(0, hp[tgt.uid] - amt);
+        events.push({ type: "action", side: "enemy", actor: "boss", actorName: boss.name, ability: babil.n, kind: "damage",
+          target: tgt.uid, targetName: tgt.name, amount: amt, crit: crit,
+          text: "🔥 " + boss.name + " hits " + tgt.name + " with " + babil.n + (crit ? " — CRIT!" : "") + " for " + amt + "!" });
+        if(hp[tgt.uid] <= 0) events.push({ type: "action", side: "enemy", actor: "boss", kind: "buff", target: tgt.uid, targetName: tgt.name,
+          text: "☠️ " + tgt.name + " has fallen!" });
+      }
+    }
+    const victory = bossHp <= 0;
+    events.push({ type: "end", outcome: victory ? "victory" : "defeat",
+      text: victory ? "🌱 The okra-patch is victorious!" : "The Warden stands triumphant…" });
+    return { boss: boss, party: party, events: events, startsAt: Date.now() };
+  }
+
+  function showDemo(reason){
+    note.innerHTML = '<span class="demoBadge">PREVIEW</span> sample auto-battle — ' + esc(reason);
+    play(genDemoBattle());
+  }
+
+  /* ---------- real-data wiring ---------- */
+  function sortLog(log){
+    return Object.keys(log || {}).map(Number).sort((a, b) => a - b).map((k) => log[k]);
+  }
+  async function loadReal(cfg){
+    const key = cfg.seasonId + "/" + cfg.weekId;
+    const [bossSnap, raidSnap] = await Promise.all([ get(ref(db, "bosses/" + key)), get(ref(db, "raids/" + key)) ]);
+    const boss = bossSnap.val(), raid = raidSnap.val() || {};
+    const combat = raid.combat;
+    if(!combat || !combat.log){ showDemo("no battle has been recorded yet"); return; }
+    const signups = raid.signups || {};
+    const party = Object.keys(signups).map((uid) => {
+      const s = signups[uid];
+      return { uid: uid, name: s.displayName || "Hero", class: s.class, role: s.role,
+               maxHp: s.maxHp || (200 + (s.defense || 0)) };
+    });
+    note.textContent = combat.status === "done" ? "replay" : "live";
+    play({ boss: { name: boss ? boss.name : "Boss", maxHp: combat.bossMaxHp || (boss ? boss.hp : 1000) },
+           party: party, events: sortLog(combat.log), startsAt: combat.startsAt || Date.now() });
+  }
+
+  try {
+    const appMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const dbMod  = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+    ({ ref, onValue, get } = dbMod);
+    db = dbMod.getDatabase(appMod.initializeApp(firebaseConfig));
+    // Local dev only: when served from localhost, read the Firebase emulator
+    // (same namespace) so the battle replays the backend's local combat log.
+    if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+      try { dbMod.connectDatabaseEmulator(db, "127.0.0.1", 9000); console.info("kennyBot: using local Firebase emulator"); } catch (e) {}
+    }
+  } catch (e) { db = null; }
+
+  if(!db){
+    showDemo("offline preview — connect to the internet for live data");
+  } else {
+    onValue(ref(db, "config/raid"), (snap) => {
+      const cfg = snap.val();
+      if(cfg && cfg.seasonId && cfg.weekId && (cfg.phase === "live" || cfg.phase === "done")){
+        loadReal(cfg).catch(() => showDemo("could not load the battle"));
+      } else {
+        showDemo(cfg ? "the raid hasn't started — this is a preview" : "no raid scheduled yet");
+      }
+    }, () => showDemo("database unavailable"));
+  }
+</script>

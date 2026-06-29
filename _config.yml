@@ -10,3 +10,4 @@ exclude:
   - Gemfile.lock
   - README.md
   - vendor
+  - docs        # committed project docs, but not rendered as site pages
