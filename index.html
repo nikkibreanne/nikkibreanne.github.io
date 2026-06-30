@@ -23,13 +23,7 @@ title: OKRAFANS — Nikki BreAnne
     </h2>
     <p class="gameNavIntro">🗡️ Muster the okra-patch, field the team, and watch the boss fall — all from chat.</p>
     <a class="pollBtn gameCta" href="{{ '/raid/' | relative_url }}">▶ ENTER THE RAID</a>
-    <nav class="gameNav" aria-label="Okra raid game pages">
-      <a class="gameNavLink" href="{{ '/raid/' | relative_url }}">🌱 Muster</a>
-      <a class="gameNavLink" href="{{ '/arena/' | relative_url }}">⚔️ Arena</a>
-      <a class="gameNavLink" href="{{ '/leaderboard/' | relative_url }}">🏆 Leaderboard</a>
-      <a class="gameNavLink" href="{{ '/archive/' | relative_url }}">📜 Past Raids</a>
-      <a class="gameNavLink" href="{{ '/how-to-play/' | relative_url }}">📖 How to Play</a>
-    </nav>
+    {% include game-nav.html %}
   </div>
 </section>
 

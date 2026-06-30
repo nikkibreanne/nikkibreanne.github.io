@@ -16,13 +16,7 @@
          currently always reads config/raid (the ACTIVE week); replaying an
          archived raid needs /arena/ to accept ?s=<seasonId>&w=<weekId> query
          params and load raids/<s>/<w>/combat for that specific week instead. -->
-    <nav class="gameNav" aria-label="Okra raid game pages">
-      <a class="gameNavLink" href="{{ '/raid/' | relative_url }}">🌱 Muster</a>
-      <a class="gameNavLink" href="{{ '/arena/' | relative_url }}">⚔️ Arena</a>
-      <a class="gameNavLink" href="{{ '/leaderboard/' | relative_url }}">🏆 Leaderboard</a>
-      <a class="gameNavLink" href="{{ '/archive/' | relative_url }}" aria-current="page">📜 Past Raids</a>
-      <a class="gameNavLink" href="{{ '/how-to-play/' | relative_url }}">📖 How to Play</a>
-    </nav>
+    {% include game-nav.html current="archive" %}
     <p id="archiveNote" class="gameNote"></p>
   </div>
 </section>
