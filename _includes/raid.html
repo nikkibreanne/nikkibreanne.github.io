@@ -149,7 +149,7 @@
       const downed = res.downed;
       raidBody.innerHTML = bossHead +
         '<div class="raidStatus ' + (downed ? "downed" : "wiped") + '">' +
-          (downed ? "💀 BOSS DOWNED — the patch prevails! 🌱" : "🪦 WIPE — we&rsquo;ll get it next week.") + '</div>' +
+          (downed ? "💀 BOSS DOWNED — the patch prevails! 🌱" : "🥀 WIPE — we&rsquo;ll get it next week.") + '</div>' +
         (typeof res.bossHpRemaining === "number"
           ? '<p class="raidResultLine">Final boss HP: ' + num(res.bossHpRemaining) + ' / ' + num(boss.hp) + '</p>' : "") +
         '<a class="pollBtn liveCta" href="' + ARENA_URL + '">▶ WATCH THE REPLAY</a>' +

@@ -7,7 +7,7 @@
     </h2>
     <p class="archiveIntro">
       📜 The okra-patch&rsquo;s chronicle &mdash; every boss the patch has faced this season, newest first.<br/>
-      <small>*🌱 means the patch prevailed &middot; 🪦 means we&rsquo;ll get &rsquo;em next week</small>
+      <small>*🌱 means the patch prevailed &middot; 🥀 means we&rsquo;ll get &rsquo;em next week</small>
     </p>
     <div id="archiveSeason" class="archiveSeason" hidden></div>
     <div id="archiveBody" class="archiveBody">Reading the chronicles&hellip;</div>
@@ -74,7 +74,7 @@
   /* Pick the win/loss badge from result + boss.status (text, never color-only). */
   function badgeFor(res, boss){
     if(res.downed === true) return { cls: "downed", text: "🌱 DOWNED" };
-    if(boss.status === "wiped" || (res.status === "done" && res.downed === false)) return { cls: "wiped", text: "🪦 WIPED" };
+    if(boss.status === "wiped" || (res.status === "done" && res.downed === false)) return { cls: "wiped", text: "🥀 WIPED" };
     if(boss.status === "live") return { cls: "live", text: "⚔️ LIVE NOW" };
     return { cls: "pending", text: "⏳ UPCOMING" };
   }
