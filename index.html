@@ -14,6 +14,25 @@ title: OKRAFANS — Nikki BreAnne
 
 {% include poll.html %}
 
+<section class="gameNavSection">
+  <div class="gameNavCard">
+    <h2>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+      <span>OKRA RAID GAME</span>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+    </h2>
+    <p class="gameNavIntro">🗡️ Muster the okra-patch, field the team, and watch the boss fall — all from chat.</p>
+    <a class="pollBtn gameCta" href="{{ '/raid/' | relative_url }}">▶ ENTER THE RAID</a>
+    <nav class="gameNav" aria-label="Okra raid game pages">
+      <a class="gameNavLink" href="{{ '/raid/' | relative_url }}">🌱 Muster</a>
+      <a class="gameNavLink" href="{{ '/arena/' | relative_url }}">⚔️ Arena</a>
+      <a class="gameNavLink" href="{{ '/leaderboard/' | relative_url }}">🏆 Leaderboard</a>
+      <a class="gameNavLink" href="{{ '/archive/' | relative_url }}">📜 Past Raids</a>
+      <a class="gameNavLink" href="{{ '/how-to-play/' | relative_url }}">📖 How to Play</a>
+    </nav>
+  </div>
+</section>
+
 <section class="memeWallSection">
   <div class="memeWallHead">
     <h2 class="memeWallTitle"><span class="">THE MEME WALL</span></h2>
@@ -31,6 +50,10 @@ title: OKRAFANS — Nikki BreAnne
     </figure>
     {% endfor %}
   </div>
+</section>
+
+<section class="homeBannerSection">
+  <img class="homeBanner" src="{{ '/assets/img/takeMeHome.jpg' | relative_url }}" alt="take me home"/>
 </section>
 
 {% include lightbox.html %}

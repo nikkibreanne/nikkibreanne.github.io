@@ -7,3 +7,6 @@ _site/
 # Local Ruby deps
 vendor/
 Gemfile.lock
+
+# private working docs / local notes (project standard — never committed)
+.workspace/

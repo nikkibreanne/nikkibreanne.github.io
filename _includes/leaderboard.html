@@ -1,0 +1,146 @@
+<section class="lbSection">
+  <div class="lbPanel" id="leaderboard" style="scroll-margin-top:1em;">
+    <h2>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+      <span>DAMAGE LEADERBOARD</span>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+    </h2>
+    <p class="lbIntro">
+      🏆 The okra-patch&rsquo;s hardest hitters this season &mdash; every point of boss damage tallied.<br/>
+      <small>*sign up in chat with <code>!raid</code> &middot; damage is summed from each raid-night battle</small>
+    </p>
+    <div id="lbSeason" class="lbSeason" hidden></div>
+    <div id="lbBody" class="lbBody">Tallying the harvest&hellip;</div>
+
+    <nav class="gameNav" aria-label="Okra raid game pages">
+      <a class="gameNavLink" href="{{ '/raid/' | relative_url }}">🌱 Muster</a>
+      <a class="gameNavLink" href="{{ '/arena/' | relative_url }}">⚔️ Arena</a>
+      <a class="gameNavLink" href="{{ '/leaderboard/' | relative_url }}" aria-current="page">🏆 Leaderboard</a>
+      <a class="gameNavLink" href="{{ '/archive/' | relative_url }}">📜 Past Raids</a>
+      <a class="gameNavLink" href="{{ '/how-to-play/' | relative_url }}">📖 How to Play</a>
+    </nav>
+    <p id="lbNote" class="gameNote"></p>
+  </div>
+</section>
+
+<!-- ===== Season damage leaderboard — READ-ONLY Firebase render =====
+     Reads (never writes) the same contract the backend leaderboard owns:
+       config/season/current -> { id, name? }   (active season pointer)
+       leaderboard/<seasonId>/<uid> -> { damage }   (per-hero season total)
+       players/<uid>/displayName -> string          (hero name, chat-supplied)
+     Mirrors the bot's rankEntries(): drop zero/absent scores, sort desc by
+     damage. Degrades to a labeled PREVIEW demo when Firebase is unreachable. -->
+<script type="module">
+  /* The apiKey is NOT a secret — it lives in public client code; the Realtime
+     Database security rules lock game state to read-only for the client. */
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3aWINWIBQ4rM_Ua2EOtr_Tw9rGhYdoS0",
+    authDomain: "okrafans.firebaseapp.com",
+    databaseURL: "https://okrafans-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "okrafans",
+    storageBucket: "okrafans.firebasestorage.app",
+    messagingSenderId: "56095817168",
+    appId: "1:56095817168:web:6355809cae65797ca28dd5"
+  };
+
+  let db = null, ref = null, onValue = null, get = null;
+  const lbBody   = document.getElementById("lbBody");
+  const lbSeason = document.getElementById("lbSeason");
+  const note     = document.getElementById("lbNote");
+
+  const num = (n) => (n || 0).toLocaleString("en-US");
+  const esc = (s) => { const d = document.createElement("div"); d.textContent = (s == null ? "" : String(s)); return d.innerHTML; };
+
+  /* uid -> displayName cache so re-renders don't re-fetch the same name */
+  const nameCache = {};
+  async function resolveName(uid){
+    if(Object.prototype.hasOwnProperty.call(nameCache, uid)) return nameCache[uid];
+    if(!db || !get){ nameCache[uid] = null; return null; }
+    try { const s = await get(ref(db, "players/" + uid + "/displayName")); nameCache[uid] = s.val() || null; }
+    catch(e){ nameCache[uid] = null; }
+    return nameCache[uid];
+  }
+
+  function setSeasonLabel(id, name){
+    lbSeason.hidden = false;
+    lbSeason.textContent = name ? ("Season — " + name) : ("Season " + id);
+  }
+
+  function rowsHtml(entries){
+    if(!entries.length){
+      return '<p class="lbEmpty">No damage logged yet this season — jump in with <code>!raid</code> in chat! 🌱</p>';
+    }
+    const top = entries[0].damage || 1;
+    const rank3 = ["🥇", "🥈", "🥉"];
+    return '<ol class="lbList">' + entries.map((e, i) => {
+      const pct = e.damage > 0 ? Math.max(3, Math.round((e.damage / top) * 100)) : 0;
+      const badge = rank3[i] || ('#' + (i + 1));
+      return '<li class="lbRow' + (i < 3 ? ' lbTop' : '') + '">' +
+          '<span class="lbRank">' + badge + '</span>' +
+          '<span class="lbWho">' +
+            '<span class="lbName">' + esc(e.name || ("Hero " + e.uid)) + '</span>' +
+            '<span class="lbBar"><span class="lbBarFill" style="width:' + pct + '%"></span></span>' +
+          '</span>' +
+          '<span class="lbDmg">' + num(e.damage) + '<span class="lbDmgLbl"> dmg</span></span>' +
+        '</li>';
+    }).join("") + '</ol>';
+  }
+
+  /* Turn a leaderboard/<season> snapshot into a sorted, name-resolved list. */
+  async function renderBoard(seasonId, seasonName, lb){
+    setSeasonLabel(seasonId, seasonName);
+    const entries = Object.keys(lb || {}).map((uid) => {
+      const v = lb[uid];
+      const damage = typeof v === "number" ? v : Number((v && v.damage) || 0);
+      return { uid, damage: Number.isFinite(damage) ? damage : 0 };
+    }).filter((e) => e.damage > 0).sort((a, b) => b.damage - a.damage);
+
+    if(!entries.length){ lbBody.innerHTML = rowsHtml([]); return; }
+    await Promise.all(entries.map(async (e) => { e.name = await resolveName(e.uid); }));
+    lbBody.innerHTML = rowsHtml(entries);
+  }
+
+  /* ---- clean states (read-only): connected-but-empty and offline ---- */
+  function showEmpty(msg){
+    note.textContent = "";
+    lbSeason.hidden = true;
+    lbBody.innerHTML = '<p class="lbEmpty">' + msg + '</p>';
+  }
+  function showOffline(){
+    note.textContent = "";
+    lbSeason.hidden = true;
+    lbBody.innerHTML = '<p class="lbEmpty">Live data is offline right now — reconnect to see it.</p>';
+  }
+
+  /* ---- live wiring (read-only) ---- */
+  let subscribedSeason = null;
+  try {
+    const appMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const dbMod  = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+    ({ ref, onValue, get } = dbMod);
+    db = dbMod.getDatabase(appMod.initializeApp(firebaseConfig));
+    // Production is the default everywhere (including localhost). Opt INTO the
+    // local Firebase emulator with ?dev on the URL — local backend testing only;
+    // every normal visit reads production.
+    if (new URLSearchParams(location.search).has("dev")) {
+      try { dbMod.connectDatabaseEmulator(db, "127.0.0.1", 9000); console.info("kennyBot: using local Firebase emulator"); } catch (e) {}
+    }
+  } catch (e) { db = null; }
+
+  if(!db){
+    showOffline();
+  } else {
+    onValue(ref(db, "config/season/current"), (snap) => {
+      const season = snap.val();
+      const seasonId = season && season.id;
+      if(!seasonId){ showEmpty("🌱 No active season right now — check back when the next one begins!"); return; }
+      if(seasonId !== subscribedSeason){
+        subscribedSeason = seasonId;
+        onValue(ref(db, "leaderboard/" + seasonId), (s) => {
+          note.textContent = "";
+          renderBoard(seasonId, season.name, s.val() || {});
+        }, () => showOffline());
+      }
+    }, () => showOffline());
+  }
+</script>

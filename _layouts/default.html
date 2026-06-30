@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>{{ page.title | default: site.title }}</title>
   <meta name="description" content="{{ page.description | default: site.description }}"/>
+  {% if page.noindex %}<meta name="robots" content="noindex"/>{% endif %}
+  <link rel="icon" type="image/svg+xml" href="{{ '/assets/img/favicon.svg' | relative_url }}"/>
+  <link rel="icon" type="image/png" href="{{ '/assets/img/Okr.png' | relative_url }}"/>
+  <link rel="apple-touch-icon" href="{{ '/assets/img/Okr.png' | relative_url }}"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet"/>
@@ -13,10 +17,12 @@
 <body>
   <header class="okraHeader">
     <div class="wiggleOkra"><img class="okraSpin" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt="okra"/></div>
-    <div class="okraHeaderTitle">
-      <p class="presents">Nikki BreAnne presents</p>
-      <h1 class="blinking siteTitle">OKRAFANS</h1>
-    </div>
+    <a class="okraHomeLink" href="{{ '/' | relative_url }}" aria-label="OKRAFANS home">
+      <div class="okraHeaderTitle">
+        <p class="presents">Nikki BreAnne presents</p>
+        <h1 class="blinking siteTitle">OKRAFANS</h1>
+      </div>
+    </a>
     <div class="wiggleOkra"><img class="okraSpin" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt="okra"/></div>
   </header>
 
@@ -25,7 +31,6 @@
   </main>
 
   <footer class="okraFooter">
-    <img class="footerBanner" src="{{ '/assets/img/takeMeHome.jpg' | relative_url }}" alt="take me home"/>
     <div class="footerInner">
       <nav class="socials" aria-label="Nikki's socials">
         <a href="https://www.twitch.tv/nikkibreanne" target="_blank" rel="noopener noreferrer">🟣 Twitch</a>

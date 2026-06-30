@@ -1,0 +1,204 @@
+<section class="battleSection">
+  <div class="battleStage" id="battle">
+    <h2>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+      <span>RAID — LIVE</span>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+    </h2>
+    <div id="battleBody" class="battleBody">Entering the arena&hellip;</div>
+    <div class="battleControls">
+      <button id="replayBtn" class="pollBtn" type="button" hidden>↻ REPLAY FROM START</button>
+      <a class="pollBtn liveCta" href="{{ '/raid/' | relative_url }}">← back to muster</a>
+    </div>
+    <p id="battleNote" class="raidNote"></p>
+  </div>
+</section>
+
+<!-- ===== Live boss battle — READ-ONLY combat-log PLAYER =====
+     The backend (kennyBot) computes an automated, seeded, turn-based battle and
+     writes it as an append-only event log. This page is a "replay player": it
+     reveals events on a timer synced to combat.startsAt, so everyone sees the
+     same moment, latecomers catch up, and a finished battle is re-watchable.
+
+     Combat-log event contract (raids/<s>/<w>/combat):
+       { seed, status: pending|live|done, startsAt, bossMaxHp,
+         result: { downed, bossHpRemaining, mvp },
+         log: {                       // keyed by ascending integer sequence
+           "0": { type:"start", text },
+           "1": { type:"turn", n:1 },
+           "2": { type:"action", side:"party"|"enemy", actor:<uid|"boss">,
+                  actorName, ability, kind:"damage"|"heal"|"aoe"|"buff",
+                  target:<uid|"boss">, targetName, amount, crit:bool, text },
+           "N": { type:"end", outcome:"victory"|"defeat", text } } }
+     The UI recomputes HP bars by replaying revealed amounts; if the backend also
+     stamps running HP on events it will be preferred. -->
+<script type="module">
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3aWINWIBQ4rM_Ua2EOtr_Tw9rGhYdoS0",
+    authDomain: "okrafans.firebaseapp.com",
+    databaseURL: "https://okrafans-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "okrafans",
+    storageBucket: "okrafans.firebasestorage.app",
+    messagingSenderId: "56095817168",
+    appId: "1:56095817168:web:6355809cae65797ca28dd5"
+  };
+  let db = null, ref = null, onValue = null, get = null;
+  let serverOffset = 0; // Firebase server-clock correction (ms) for global sync
+  const body = document.getElementById("battleBody");
+  const note = document.getElementById("battleNote");
+  const replayBtn = document.getElementById("replayBtn");
+
+  const MS_PER_EVENT = 1200;
+  const ROLE_LABEL = { tank: "🛡️", healer: "✚", dps: "⚔️" };
+  const num = (n) => (n || 0).toLocaleString("en-US");
+  const clampPct = (part, whole) => whole ? Math.max(0, Math.min(100, Math.round((part / whole) * 100))) : 0;
+  const esc = (s) => { const d = document.createElement("div"); d.textContent = (s == null ? "" : String(s)); return d.innerHTML; };
+
+  /* ---------- render a battle state up to `n` revealed events ---------- */
+  function renderBattle(model, n){
+    let bossHp = model.boss.maxHp;
+    const hp = {}; model.party.forEach((p) => { hp[p.uid] = p.maxHp; });
+    let turn = 0, outcome = null;
+    const lines = [];
+    for(let i = 0; i < n; i++){
+      const e = model.events[i];
+      if(e.type === "start"){ lines.push({ cls: "system", text: e.text }); continue; }
+      if(e.type === "turn"){ turn = e.n; lines.push({ cls: "turnmark", text: "— Turn " + e.n + " —" }); continue; }
+      if(e.type === "end"){ outcome = e.outcome; lines.push({ cls: e.outcome === "victory" ? "victory" : "defeat", text: e.text }); continue; }
+      // action
+      if(e.kind === "damage"){
+        if(e.target === "boss") bossHp = Math.max(0, bossHp - (e.amount || 0));
+        else if(hp[e.target] != null) hp[e.target] = Math.max(0, hp[e.target] - (e.amount || 0));
+      } else if(e.kind === "aoe"){
+        model.party.forEach((p) => { if(hp[p.uid] > 0) hp[p.uid] = Math.max(0, hp[p.uid] - (e.amount || 0)); });
+      } else if(e.kind === "heal"){
+        const m = model.party.find((p) => p.uid === e.target);
+        if(m) hp[e.target] = Math.min(m.maxHp, (hp[e.target] || 0) + (e.amount || 0));
+      }
+      let cls = (e.side === "enemy" ? "enemy" : "party");
+      if(e.kind === "heal") cls += " heal";
+      if(e.crit) cls += " crit";
+      lines.push({ cls: cls, text: e.text });
+    }
+
+    const bossPct = clampPct(bossHp, model.boss.maxHp);
+    const aliveCount = model.party.filter((p) => hp[p.uid] > 0).length;
+
+    const partyCards = model.party.map((p) => {
+      const cur = hp[p.uid] || 0, pct = clampPct(cur, p.maxHp), down = cur <= 0;
+      return '<div class="pmember ' + (down ? "down" : "") + '">' +
+          '<div class="pmHead">' + (ROLE_LABEL[p.role] || "") + ' <span class="pmName">' + esc(p.name) + '</span>' +
+            (down ? '<span class="pmDown">DOWN</span>' : '<span class="pmHp">' + num(cur) + "/" + num(p.maxHp) + '</span>') + '</div>' +
+          '<div class="pmBar"><div class="pmBarFill" style="width:' + pct + '%"></div></div>' +
+        '</div>';
+    }).join("");
+
+    const outcomeHtml = outcome
+      ? '<div class="raidStatus ' + (outcome === "victory" ? "downed" : "wiped") + ' battleOutcome">' +
+          (outcome === "victory" ? "💀 VICTORY — " + esc(model.boss.name) + " falls! 🌱" : "🪦 DEFEAT — the patch is wiped.") + '</div>'
+      : "";
+
+    body.innerHTML =
+      outcomeHtml +
+      '<div class="bossPanel">' +
+        '<div class="bossHead"><span class="bossName">' + esc(model.boss.name) + '</span>' +
+          '<span class="turnCounter">Turn ' + turn + '</span></div>' +
+        '<div class="hpBar bossHpBar"><div class="hpBarFill" style="width:' + bossPct + '%"></div>' +
+          '<div class="hpBarLabel">' + bossPct + '% &middot; ' + num(bossHp) + " / " + num(model.boss.maxHp) + ' HP</div></div>' +
+      '</div>' +
+      '<div class="partyGrid">' + partyCards + '</div>' +
+      '<div class="partyAlive">👥 ' + aliveCount + " / " + model.party.length + ' heroes standing</div>' +
+      '<div class="combatLog" id="combatLog">' +
+        lines.map((l) => '<div class="logLine ' + l.cls + '">' + l.text + '</div>').join("") +
+      '</div>';
+
+    const log = document.getElementById("combatLog");
+    if(log) log.scrollTop = log.scrollHeight;
+  }
+
+  /* ---------- timed reveal (synced to startsAt; replay-friendly) ---------- */
+  let timer = null;
+  function play(model){
+    if(timer){ clearInterval(timer); timer = null; }
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const start = model.startsAt || Date.now();
+    const total = model.events.length;
+    function frame(){
+      const elapsed = (Date.now() + serverOffset) - start;
+      const visible = reduced ? total : Math.max(1, Math.min(total, Math.floor(elapsed / MS_PER_EVENT) + 1));
+      renderBattle(model, visible);
+      if(visible >= total){ if(timer){ clearInterval(timer); timer = null; } replayBtn.hidden = false; }
+    }
+    frame();
+    if(!reduced) timer = setInterval(frame, 250);
+    replayBtn.onclick = () => { model.startsAt = Date.now() + serverOffset; replayBtn.hidden = true; play(model); };
+  }
+
+  /* ---- clean states (read-only): connected-but-empty and offline ---- */
+  function clearPlayback(){
+    if(timer){ clearInterval(timer); timer = null; }
+    replayBtn.hidden = true;
+  }
+  function showEmpty(msg){
+    clearPlayback();
+    note.textContent = "";
+    body.innerHTML = '<p class="raidEmpty">' + msg + '</p>';
+  }
+  function showOffline(){
+    clearPlayback();
+    note.textContent = "";
+    body.innerHTML = '<p class="raidEmpty">Live data is offline right now — reconnect to see it.</p>';
+  }
+
+  /* ---------- real-data wiring ---------- */
+  function sortLog(log){
+    return Object.keys(log || {}).map(Number).sort((a, b) => a - b).map((k) => log[k]);
+  }
+  async function loadReal(cfg){
+    const key = cfg.seasonId + "/" + cfg.weekId;
+    const [bossSnap, raidSnap] = await Promise.all([ get(ref(db, "bosses/" + key)), get(ref(db, "raids/" + key)) ]);
+    const boss = bossSnap.val(), raid = raidSnap.val() || {};
+    const combat = raid.combat;
+    if(!combat || !combat.log){ showEmpty("🌱 No battle yet — it plays out right here on raid night."); return; }
+    const signups = raid.signups || {};
+    const party = Object.keys(signups).map((uid) => {
+      const s = signups[uid];
+      return { uid: uid, name: s.displayName || "Hero", class: s.class, role: s.role,
+               maxHp: s.maxHp || (200 + (s.defense || 0)) };
+    });
+    note.textContent = "";
+    play({ boss: { name: boss ? boss.name : "Boss", maxHp: combat.bossMaxHp || (boss ? boss.hp : 1000) },
+           party: party, events: sortLog(combat.log), startsAt: combat.startsAt || Date.now() });
+  }
+
+  try {
+    const appMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const dbMod  = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+    ({ ref, onValue, get } = dbMod);
+    db = dbMod.getDatabase(appMod.initializeApp(firebaseConfig));
+    // Production is the default everywhere (including localhost). Opt INTO the
+    // local Firebase emulator with ?dev on the URL — local backend testing only;
+    // every normal visit reads production.
+    if (new URLSearchParams(location.search).has("dev")) {
+      try { dbMod.connectDatabaseEmulator(db, "127.0.0.1", 9000); console.info("kennyBot: using local Firebase emulator"); } catch (e) {}
+    }
+    // Correct for client clock skew so every viewer worldwide reveals the same
+    // moment of the battle (synced to the server clock, not the local one).
+    onValue(ref(db, ".info/serverTimeOffset"), (s) => { serverOffset = s.val() || 0; });
+  } catch (e) { db = null; }
+
+  if(!db){
+    showOffline();
+  } else {
+    onValue(ref(db, "config/raid"), (snap) => {
+      const cfg = snap.val();
+      if(cfg && cfg.seasonId && cfg.weekId && (cfg.phase === "live" || cfg.phase === "done")){
+        loadReal(cfg).catch(() => showOffline());
+      } else {
+        showEmpty(cfg
+          ? "🌱 The raid hasn&rsquo;t started yet — the battle plays out here on raid night."
+          : "🌱 No raid scheduled right now — the battle plays out here on raid night.");
+      }
+    }, () => showOffline());
+  }
+</script>

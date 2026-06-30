@@ -1,0 +1,175 @@
+<section class="archiveSection">
+  <div class="archivePanel" id="archive" style="scroll-margin-top:1em;">
+    <h2>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+      <span>PAST RAIDS</span>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+    </h2>
+    <p class="archiveIntro">
+      📜 The okra-patch&rsquo;s chronicle &mdash; every boss the patch has faced this season, newest first.<br/>
+      <small>*🌱 means the patch prevailed &middot; 🪦 means we&rsquo;ll get &rsquo;em next week</small>
+    </p>
+    <div id="archiveSeason" class="archiveSeason" hidden></div>
+    <div id="archiveBody" class="archiveBody">Reading the chronicles&hellip;</div>
+
+    <!-- TODO follow-up: per-raid "watch the replay" deep-links. The /arena/ player
+         currently always reads config/raid (the ACTIVE week); replaying an
+         archived raid needs /arena/ to accept ?s=<seasonId>&w=<weekId> query
+         params and load raids/<s>/<w>/combat for that specific week instead. -->
+    <nav class="gameNav" aria-label="Okra raid game pages">
+      <a class="gameNavLink" href="{{ '/raid/' | relative_url }}">🌱 Muster</a>
+      <a class="gameNavLink" href="{{ '/arena/' | relative_url }}">⚔️ Arena</a>
+      <a class="gameNavLink" href="{{ '/leaderboard/' | relative_url }}">🏆 Leaderboard</a>
+      <a class="gameNavLink" href="{{ '/archive/' | relative_url }}" aria-current="page">📜 Past Raids</a>
+      <a class="gameNavLink" href="{{ '/how-to-play/' | relative_url }}">📖 How to Play</a>
+    </nav>
+    <p id="archiveNote" class="gameNote"></p>
+  </div>
+</section>
+
+<!-- ===== Past-raids archive — READ-ONLY Firebase render =====
+     Reads (never writes):
+       config/season/current -> { id, name? }
+       raids/<seasonId>/<weekId> -> { result:{ downed, bossHpRemaining, mvp, status },
+                                      combat:{ result, bossMaxHp }, signups }
+       bosses/<seasonId>/<weekId> -> { name, hp, status }   (status: signup|locked|live|downed|wiped)
+     Weeks ("w1","w2",…) are listed newest-first. Degrades to a labeled PREVIEW
+     demo when Firebase is unreachable/empty. -->
+<script type="module">
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3aWINWIBQ4rM_Ua2EOtr_Tw9rGhYdoS0",
+    authDomain: "okrafans.firebaseapp.com",
+    databaseURL: "https://okrafans-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "okrafans",
+    storageBucket: "okrafans.firebasestorage.app",
+    messagingSenderId: "56095817168",
+    appId: "1:56095817168:web:6355809cae65797ca28dd5"
+  };
+
+  let db = null, ref = null, onValue = null, get = null;
+  const body     = document.getElementById("archiveBody");
+  const seasonEl = document.getElementById("archiveSeason");
+  const note     = document.getElementById("archiveNote");
+
+  const num = (n) => (n || 0).toLocaleString("en-US");
+  const esc = (s) => { const d = document.createElement("div"); d.textContent = (s == null ? "" : String(s)); return d.innerHTML; };
+  const weekLabel = (w) => { const n = String(w).replace(/\D/g, ""); return n ? ("Week " + n) : esc(w); };
+
+  /* uid -> displayName cache for the MVP name */
+  const nameCache = {};
+  async function resolveName(uid){
+    if(uid == null) return null;
+    if(Object.prototype.hasOwnProperty.call(nameCache, uid)) return nameCache[uid];
+    if(!db || !get){ nameCache[uid] = null; return null; }
+    try { const s = await get(ref(db, "players/" + uid + "/displayName")); nameCache[uid] = s.val() || null; }
+    catch(e){ nameCache[uid] = null; }
+    return nameCache[uid];
+  }
+
+  function setSeasonLabel(id, name){
+    seasonEl.hidden = false;
+    seasonEl.textContent = name ? ("Season — " + name) : ("Season " + id);
+  }
+
+  /* Pick the win/loss badge from result + boss.status (text, never color-only). */
+  function badgeFor(res, boss){
+    if(res.downed === true) return { cls: "downed", text: "🌱 DOWNED" };
+    if(boss.status === "wiped" || (res.status === "done" && res.downed === false)) return { cls: "wiped", text: "🪦 WIPED" };
+    if(boss.status === "live") return { cls: "live", text: "⚔️ LIVE NOW" };
+    return { cls: "pending", text: "⏳ UPCOMING" };
+  }
+
+  function itemHtml(week, name, badge, hpLine, mvpName){
+    return '<li class="archiveItem">' +
+        '<div class="archiveTop">' +
+          '<span><span class="archiveWeek">' + esc(weekLabel(week)) + '</span> ' +
+            '<span class="archiveBoss">' + esc(name) + '</span></span>' +
+          '<span class="archiveBadge ' + badge.cls + '">' + badge.text + '</span>' +
+        '</div>' +
+        ((hpLine || mvpName) ?
+          '<div class="archiveMeta">' +
+            (hpLine ? '<span class="archiveHp">' + hpLine + '</span>' : '') +
+            (mvpName ? '<span class="archiveMvp">⭐ MVP: ' + esc(mvpName) + '</span>' : '') +
+          '</div>' : '') +
+      '</li>';
+  }
+
+  /* Build the newest-first archive from the raids + bosses season nodes. */
+  async function renderArchive(seasonId, seasonName, raids, bosses){
+    setSeasonLabel(seasonId, seasonName);
+    const weeks = Array.from(new Set([...Object.keys(raids || {}), ...Object.keys(bosses || {})]))
+      .sort((a, b) => String(b).localeCompare(String(a), undefined, { numeric: true, sensitivity: "base" }));
+
+    if(!weeks.length){
+      body.innerHTML = '<p class="archiveEmpty">No raids recorded yet this season — the first boss is coming! 🌱</p>';
+      return;
+    }
+
+    const rows = await Promise.all(weeks.map(async (w) => {
+      const raid = (raids && raids[w]) || {};
+      const boss = (bosses && bosses[w]) || {};
+      const res = raid.result || (raid.combat && raid.combat.result) || {};
+      const badge = badgeFor(res, boss);
+      const name = boss.name || raid.bossName || "Unknown Boss";
+
+      const maxHp = (raid.combat && raid.combat.bossMaxHp) || boss.hp;
+      let hpLine = "";
+      if(typeof res.bossHpRemaining === "number"){
+        hpLine = "Final boss HP: " + num(res.bossHpRemaining) + (typeof maxHp === "number" ? " / " + num(maxHp) : "");
+      }
+      const mvpName = res.mvp ? await resolveName(res.mvp) : null;
+      return itemHtml(w, name, badge, hpLine, mvpName);
+    }));
+    body.innerHTML = '<ol class="archiveList">' + rows.join("") + '</ol>';
+  }
+
+  /* ---- clean states (read-only): connected-but-empty and offline ---- */
+  function showEmpty(msg){
+    note.textContent = "";
+    seasonEl.hidden = true;
+    body.innerHTML = '<p class="archiveEmpty">' + msg + '</p>';
+  }
+  function showOffline(){
+    note.textContent = "";
+    seasonEl.hidden = true;
+    body.innerHTML = '<p class="archiveEmpty">Live data is offline right now — reconnect to see it.</p>';
+  }
+
+  /* ---- live wiring (read-only) ---- */
+  const state = { seasonId: null, seasonName: null, raids: null, bosses: null, ready: false };
+  function recompute(){
+    if(!state.ready) return;
+    note.textContent = "";
+    renderArchive(state.seasonId, state.seasonName, state.raids || {}, state.bosses || {});
+  }
+
+  let subscribedSeason = null;
+  try {
+    const appMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const dbMod  = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+    ({ ref, onValue, get } = dbMod);
+    db = dbMod.getDatabase(appMod.initializeApp(firebaseConfig));
+    // Production is the default everywhere (including localhost). Opt INTO the
+    // local Firebase emulator with ?dev on the URL — local backend testing only;
+    // every normal visit reads production.
+    if (new URLSearchParams(location.search).has("dev")) {
+      try { dbMod.connectDatabaseEmulator(db, "127.0.0.1", 9000); console.info("kennyBot: using local Firebase emulator"); } catch (e) {}
+    }
+  } catch (e) { db = null; }
+
+  if(!db){
+    showOffline();
+  } else {
+    onValue(ref(db, "config/season/current"), (snap) => {
+      const season = snap.val();
+      const seasonId = season && season.id;
+      if(!seasonId){ showEmpty("🌱 No active season right now — past raids will appear here once one begins!"); return; }
+      state.seasonId = seasonId; state.seasonName = season.name || null;
+      if(seasonId !== subscribedSeason){
+        subscribedSeason = seasonId;
+        onValue(ref(db, "raids/" + seasonId),  (s) => { state.raids = s.val();  state.ready = true; recompute(); }, () => showOffline());
+        onValue(ref(db, "bosses/" + seasonId), (s) => { state.bosses = s.val(); state.ready = true; recompute(); }, () => showOffline());
+      }
+    }, () => showOffline());
+  }
+</script>

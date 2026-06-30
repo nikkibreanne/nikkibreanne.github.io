@@ -1,0 +1,122 @@
+---
+layout: default
+title: HOW TO PLAY — OKRAFANS
+description: How the okra-patch raid game works — the weekly loop and every chat command for Nikki BreAnne's community raid.
+permalink: /how-to-play/
+noindex: true
+---
+
+<section class="htpSection">
+  <div class="htpPanel">
+    <h2>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+      <span>HOW THE RAID GAME WORKS</span>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+    </h2>
+    <p class="htpIntro">
+      🌱 Grow a little okra-hero in chat, gear it up, and march the whole patch against one big bad every week.<br/>
+      <small>*all from chat while Nikki&rsquo;s live &middot; the battle plays out on the site</small>
+    </p>
+    <a class="pollBtn gameCta" href="{{ '/raid/' | relative_url }}">▶ ENTER THE RAID</a>
+    <nav class="gameNav" aria-label="Okra raid game pages">
+      <a class="gameNavLink" href="{{ '/raid/' | relative_url }}">🌱 Muster</a>
+      <a class="gameNavLink" href="{{ '/arena/' | relative_url }}">⚔️ Arena</a>
+      <a class="gameNavLink" href="{{ '/leaderboard/' | relative_url }}">🏆 Leaderboard</a>
+      <a class="gameNavLink" href="{{ '/archive/' | relative_url }}">📜 Past Raids</a>
+      <a class="gameNavLink" href="{{ '/how-to-play/' | relative_url }}" aria-current="page">📖 How to Play</a>
+    </nav>
+  </div>
+
+  <div class="htpPanel">
+    <h3>🌿 THE WEEKLY LOOP</h3>
+    <p class="htpIntro">One harvest, start to finish — here&rsquo;s the whole season-week in six sprouts.</p>
+    <ol class="htpSteps">
+      <li class="htpStep">
+        <span class="htpStepTitle">Sprout a hero 🌱</span>
+        <small>Subscribers plant an okra-hero with <code>!create &lt;class&gt;</code>. Your class picks your battlefield job (tank, healer, or damage) and you start with some humble starter gear.</small>
+      </li>
+      <li class="htpStep">
+        <span class="htpStepTitle">Chat to grow 💬</span>
+        <small>Every message you send <strong>while the stream is live</strong> sprinkles EXP on your hero. Hang out, yap in chat, and watch that bar fill.</small>
+      </li>
+      <li class="htpStep">
+        <span class="htpStepTitle">Level up &amp; gear up ⚒️</span>
+        <small>Fill the EXP bar to level up and get stronger. When loot drops in chat, <code>!grab</code> it, then <code>!equip</code> the good stuff into your weapon, armor, and trinket slots.</small>
+      </li>
+      <li class="htpStep">
+        <span class="htpStepTitle">Muster the patch 📣</span>
+        <small>When the weekly boss is announced, a signup window opens. Subscribers type <code>!raid</code> to enlist your hero in this week&rsquo;s fight. The roster fills up live on the Muster page.</small>
+      </li>
+      <li class="htpStep">
+        <span class="htpStepTitle">Raid night ⚔️</span>
+        <small>At raid night the roster <strong>locks</strong> and an automated, turn-by-turn battle plays out — your levels, gear, and team balance all decide how it goes. Nobody types during the fight; it resolves on its own.</small>
+      </li>
+      <li class="htpStep">
+        <span class="htpStepTitle">Watch, loot, climb 🏆</span>
+        <small>Watch the replay in the <a href="{{ '/arena/' | relative_url }}">Arena</a>, see whether the patch prevailed, and check where your damage landed on the <a href="{{ '/leaderboard/' | relative_url }}">Leaderboard</a>. Then it all begins again next week.</small>
+      </li>
+    </ol>
+  </div>
+
+  <div class="htpPanel">
+    <h3>📖 CHAT COMMANDS</h3>
+    <p class="htpIntro">
+      Type these in Nikki&rsquo;s Twitch chat. Commands marked <span class="subTag">subs</span> are subscriber-only.
+    </p>
+    <ul class="cmdList">
+      <li class="cmdRow cmdSub">
+        <div class="cmdSyntax"><code>!create &lt;class&gt;</code> <span class="subTag">subs</span></div>
+        <div class="cmdDesc">Plant your okra-hero. Pick one class: <strong>Guardian</strong> (tank), <strong>Mender</strong> (healer), <strong>Berserker</strong>, <strong>Arcanist</strong>, or <strong>Ranger</strong> (all damage). You get matching starter gear.</div>
+      </li>
+      <li class="cmdRow">
+        <div class="cmdSyntax"><code>!char</code> <span class="cmdAlias">also: !me</span></div>
+        <div class="cmdDesc">View your character — class, level, EXP, rating, combat stats, and what you&rsquo;ve got equipped.</div>
+      </li>
+      <li class="cmdRow">
+        <div class="cmdSyntax"><code>!bag</code> <span class="cmdAlias">also: !inventory, !inv</span></div>
+        <div class="cmdDesc">Peek at your unequipped loot — everything you&rsquo;ve grabbed but aren&rsquo;t wearing yet.</div>
+      </li>
+      <li class="cmdRow">
+        <div class="cmdSyntax"><code>!equip &lt;item&gt;</code></div>
+        <div class="cmdDesc">Wear an item from your bag — it slots into its weapon, armor, or trinket spot automatically.</div>
+      </li>
+      <li class="cmdRow">
+        <div class="cmdSyntax"><code>!unequip &lt;slot|item&gt;</code></div>
+        <div class="cmdDesc">Bare a slot (weapon / armor / trinket) or a named item — it goes back into your bag.</div>
+      </li>
+      <li class="cmdRow cmdSub">
+        <div class="cmdSyntax"><code>!grab</code> <span class="subTag">subs</span> <span class="cmdAlias">also: !loot</span></div>
+        <div class="cmdDesc">Roll for the active loot drop while it&rsquo;s open. Your very first grab ever is guaranteed to land. 🌱</div>
+      </li>
+      <li class="cmdRow cmdSub">
+        <div class="cmdSyntax"><code>!raid</code> <span class="subTag">subs to muster</span></div>
+        <div class="cmdDesc">During the signup window, enlist your hero for this week&rsquo;s raid (subscribers). Any time, it also reports the current raid status and links you to the action.</div>
+      </li>
+      <li class="cmdRow">
+        <div class="cmdSyntax"><code>!top</code> <span class="cmdAlias">optional: !top damage</span></div>
+        <div class="cmdDesc">See the season leaderboard — the patch&rsquo;s top 5 hardest hitters.</div>
+      </li>
+    </ul>
+    <p class="htpAside">🛠️ Mods have a few extra behind-the-scenes commands for running the show — those aren&rsquo;t needed to play.</p>
+  </div>
+
+  <div class="htpPanel">
+    <h3>🌟 GOOD TO KNOW</h3>
+    <ul class="htpNotes">
+      <li><strong>EXP only grows while live.</strong> Your hero earns EXP from chatting <em>only</em> when the channel is actually live — off-stream messages don&rsquo;t count.</li>
+      <li><strong>Leveling is steady, not lucky.</strong> Each level needs a fixed EXP bar to fill; once it&rsquo;s full, your level-up lands within a few guaranteed messages. There&rsquo;s no random jackpot and no bad-luck streak — fill the bar, get the level.</li>
+      <li><strong>Higher sub tiers hit harder.</strong> A higher subscription tier boosts both how fast your hero earns EXP and its combat power on raid night.</li>
+      <li><strong>Loot grabs are tier-fair.</strong> When a drop is up, every subscriber tier has the exact same odds of grabbing it — no tier gets better loot luck than another.</li>
+    </ul>
+  </div>
+
+  <div class="htpPanel">
+    <h3>❓ FAQ</h3>
+    <div class="htpFaq">
+      <p class="htpFaqQ">I&rsquo;m subscribed but I&rsquo;m not gaining EXP — what gives?</p>
+      <p class="htpFaqA">EXP only accrues while the stream is <strong>live</strong>. If the channel is offline, your messages won&rsquo;t feed your hero — pop back in once Nikki&rsquo;s live. 🌱</p>
+      <p class="htpFaqQ">My sub lapsed. Did I lose my hero?</p>
+      <p class="htpFaqA">Nope! Your hero, level, and gear are all kept, and you keep earning EXP from chatting while live. You&rsquo;ll just need to re-sub to <strong>create a new hero</strong> or to <strong>muster for a raid</strong> with <code>!raid</code>.</p>
+    </div>
+  </div>
+</section>

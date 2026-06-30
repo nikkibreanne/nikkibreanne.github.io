@@ -118,6 +118,289 @@ body {
 .pollBarNo { background: #c0563a; }
 .pollNote { font-size: 0.8em; color: #556; margin: 0.6em 0 0; min-height: 1em; }
 
+/* ---------- weekly raid (game) ---------- */
+.raidSection { padding: 0.4em 1em; }
+.raidPanel, .charCard {
+  background: rgba(255,255,255,0.93);
+  border: 6px ridge #4f7a28;
+  border-radius: 12px;
+  box-shadow: 0 0 0 4px #8bbf4d, 0 6px 18px rgba(0,0,0,0.45);
+  max-width: 34em;
+  margin: 0 auto 1.2em;
+  padding: 0.6em 1.6em 1.3em;
+  text-align: center;
+  color: #2f4d18;
+}
+.raidPanel h2 { margin: 0.4em 0 0.2em; font-size: 1.6em; }
+.raidIntro { margin: 0 0 0.8em; font-style: italic; font-size: 0.98em; color: #4f7a28; line-height: 1.3; }
+.raidIntro small { font-size: 0.78em; color: #778; }
+.raidEmpty, .charEmpty { color: #4f7a28; font-style: italic; }
+
+.bossHead { display: flex; flex-direction: column; align-items: center; gap: 0.25em; margin-bottom: 0.5em; }
+.bossName { font-size: 1.5em; font-weight: bold; }
+.affixTag {
+  font-size: 0.8em; font-weight: bold; color: #1c2f0e;
+  background: #e0b341; border: 2px solid #2f4d18; border-radius: 999px; padding: 0.1em 0.7em;
+}
+
+.hpBar {
+  position: relative; height: 1.9em;
+  border: 2px solid #2f4d18; border-radius: 6px;
+  overflow: hidden; background: #4a4a4a; margin: 0.3em 0;
+}
+.hpBarFill { height: 100%; background: linear-gradient(90deg, #c0563a, #e0843a); transition: width 0.5s ease; }
+.hpBarLabel {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85em; font-weight: bold; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+}
+.raidTimer { font-size: 0.95em; font-weight: bold; color: #4f7a28; margin: 0.4em 0 0.8em; }
+
+.roleMeters { display: flex; flex-direction: column; gap: 0.55em; text-align: left; }
+.roleMeter { font-size: 0.92em; }
+.roleHead { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 0.15em; }
+.roleBar { height: 1em; border: 2px solid #2f4d18; border-radius: 5px; overflow: hidden; background: #eee; }
+.roleBarFill { height: 100%; transition: width 0.4s ease; }
+.roleMeter.met .roleBarFill { background: #6fae34; }
+.roleMeter.unmet .roleBarFill { background: #c0563a; }
+.roleWarn { font-size: 0.8em; font-style: italic; color: #c0563a; margin-top: 0.1em; }
+
+.raidStatus { font-weight: bold; border-radius: 8px; padding: 0.4em 0.6em; margin-bottom: 0.6em; }
+.raidStatus.downed { background: #6fae34; color: #10240a; }
+.raidStatus.wiped { background: #c0563a; color: #fff; }
+
+.raidNote { font-size: 0.8em; color: #556; margin: 0.7em 0 0; min-height: 1em; }
+.demoBadge {
+  display: inline-block; font-weight: bold; font-size: 0.92em;
+  background: #e0b341; color: #1c2f0e; border: 2px solid #2f4d18;
+  border-radius: 6px; padding: 0 0.4em; margin-right: 0.3em;
+}
+
+/* character card */
+.charTitle { margin: 0.3em 0 0.5em; font-size: 1.3em; }
+.charForm { display: flex; gap: 0.5em; justify-content: center; flex-wrap: wrap; margin-bottom: 0.7em; }
+.charInput {
+  font-family: inherit; font-size: 1.05em; padding: 0.3em 0.7em;
+  border: 3px solid #2f4d18; border-radius: 8px; max-width: 14em;
+}
+.charForm .pollBtn { font-size: 1.05em; padding: 0.3em 1em; }
+.heroName { font-size: 1.3em; font-weight: bold; margin-bottom: 0.4em; }
+.heroStats { display: flex; flex-direction: column; gap: 0.25em; text-align: left; max-width: 18em; margin: 0 auto; }
+.charStat { display: flex; justify-content: space-between; border-bottom: 1px dashed #8bbf4d; padding: 0.1em 0; }
+.charStat span:last-child { font-weight: bold; }
+
+/* ---------- raid muster: countdown / phase / team / roster ---------- */
+.raidPhaseTag { font-weight: bold; border-radius: 8px; padding: 0.4em 0.6em; margin: 0 0 0.7em; }
+.raidPhaseTag.signup { background: #eaf6d8; color: #2f4d18; border: 2px solid #6fae34; }
+.raidPhaseTag.locked { background: #fff0d4; color: #6a4a10; border: 2px solid #e0b341; }
+.raidPhaseTag code, .raidIntro code, .charEmpty code, .raidEmpty code {
+  background: #2f4d18; color: #eaffd6; border-radius: 4px; padding: 0 0.35em; font-size: 0.92em;
+}
+
+.cdCaption { margin: 0.6em 0 0.2em; font-weight: bold; color: #4f7a28; }
+.raidCountdown { display: flex; justify-content: center; gap: 0.5em; margin: 0 0 0.9em; }
+.cdCell { background: #2f4d18; color: #eaffd6; border-radius: 8px; padding: 0.35em 0.55em; min-width: 2.6em; display: flex; flex-direction: column; }
+.cdNum { font-size: 1.6em; font-weight: bold; line-height: 1; font-variant-numeric: tabular-nums; }
+.cdLbl { font-size: 0.65em; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.85; }
+
+.teamStats { display: flex; flex-wrap: wrap; gap: 0.5em; justify-content: center; margin: 0.4em 0 0.9em; }
+.statTile { background: #f1f8e6; border: 2px solid #8bbf4d; border-radius: 10px; padding: 0.4em 0.7em; min-width: 6.5em; display: flex; flex-direction: column; }
+.statVal { font-size: 1.2em; font-weight: bold; color: #2f4d18; }
+.statLbl { font-size: 0.72em; color: #4f7a28; text-transform: uppercase; letter-spacing: 0.03em; }
+
+.rosterTitle { margin: 0.8em 0 0.4em; font-size: 1.2em; }
+.roster { display: flex; flex-direction: column; gap: 0.5em; text-align: left; }
+.rosterItem { background: #f7fbef; border: 2px solid #cfe6a8; border-radius: 8px; padding: 0.45em 0.6em; }
+.rosterWho { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.2em 0.6em; align-items: baseline; }
+.rosterName { font-weight: bold; color: #2f4d18; }
+.rosterMeta { font-size: 0.82em; color: #4f7a28; }
+.gearList { display: flex; flex-wrap: wrap; gap: 0.35em; margin-top: 0.35em; }
+.gearItem { font-size: 0.78em; font-weight: bold; border: 1px solid currentColor; border-radius: 999px; padding: 0.05em 0.55em; }
+.gearEmpty { color: #aaa; font-weight: normal; font-style: italic; }
+.raidResultLine { font-size: 0.95em; color: #4f7a28; }
+
+/* loot rarity */
+.rarity-common { color: #6b6b6b; }
+.rarity-uncommon { color: #3aa655; }
+.rarity-rare { color: #2f6fd1; }
+.rarity-epic { color: #9b4dca; }
+.rarity-legendary { color: #d98324; }
+
+.raidStatus.live { background: #e0843a; color: #fff; animation: blinkLive 1.2s infinite; }
+@keyframes blinkLive { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+.liveCta { display: inline-block; text-decoration: none; margin: 0.3em 0 0.2em; }
+
+/* ---------- live battle ---------- */
+.battleSection { padding: 0.4em 1em; }
+.battleStage {
+  background: rgba(255,255,255,0.95); border: 6px ridge #4f7a28; border-radius: 12px;
+  box-shadow: 0 0 0 4px #8bbf4d, 0 6px 18px rgba(0,0,0,0.45);
+  max-width: 40em; margin: 0 auto 1.2em; padding: 0.6em 1.3em 1.2em; text-align: center; color: #2f4d18;
+}
+.battleStage h2 { margin: 0.3em 0 0.6em; font-size: 1.6em; }
+.bossPanel { margin-bottom: 0.7em; }
+.bossPanel .bossHead { flex-direction: row; justify-content: space-between; align-items: baseline; }
+.turnCounter { font-size: 0.85em; font-weight: bold; color: #4f7a28; white-space: nowrap; }
+.bossHpBar { height: 2.1em; }
+
+.partyGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5em, 1fr)); gap: 0.5em; margin: 0.6em 0; text-align: left; }
+.pmember { background: #f7fbef; border: 2px solid #cfe6a8; border-radius: 8px; padding: 0.35em 0.5em; transition: opacity 0.3s, filter 0.3s; }
+.pmember.down { opacity: 0.45; filter: grayscale(0.7); }
+.pmHead { display: flex; align-items: baseline; gap: 0.3em; font-size: 0.85em; margin-bottom: 0.2em; }
+.pmName { font-weight: bold; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pmHp { font-size: 0.85em; color: #4f7a28; font-variant-numeric: tabular-nums; }
+.pmDown { font-size: 0.75em; font-weight: bold; color: #c0563a; }
+.pmBar { height: 0.6em; border: 1px solid #2f4d18; border-radius: 4px; overflow: hidden; background: #ddd; }
+.pmBarFill { height: 100%; background: #6fae34; transition: width 0.4s ease; }
+.partyAlive { font-size: 0.85em; font-weight: bold; color: #4f7a28; margin-bottom: 0.5em; }
+
+.combatLog {
+  text-align: left; background: #14210b; color: #d8f0bf; border-radius: 8px;
+  padding: 0.6em 0.8em; height: 16em; overflow-y: auto; font-size: 0.9em; line-height: 1.45;
+}
+.logLine { margin: 0.1em 0; }
+.logLine.system { color: #cdebff; font-style: italic; }
+.logLine.turnmark { color: #e0b341; font-weight: bold; text-align: center; margin: 0.35em 0 0.15em; }
+.logLine.party { color: #b8e986; }
+.logLine.enemy { color: #f0a07a; }
+.logLine.heal { color: #7fe0c0; }
+.logLine.crit { font-weight: bold; text-shadow: 0 0 6px rgba(255,220,120,0.6); }
+.logLine.victory { color: #9be34a; font-weight: bold; text-align: center; margin-top: 0.3em; }
+.logLine.defeat { color: #e06a4a; font-weight: bold; text-align: center; margin-top: 0.3em; }
+.battleOutcome { margin-bottom: 0.7em; }
+.battleControls { margin: 0.8em 0 0; display: flex; gap: 0.6em; justify-content: center; flex-wrap: wrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hpBarFill, .roleBarFill, .pmBarFill, .pollBarYes, .pollBarNo, .pmember { transition: none; }
+  .raidStatus.live { animation: none; }
+}
+
+/* ---------- okra-game cross nav (home + game pages) ---------- */
+.gameNavSection { padding: 0.4em 1em; }
+.gameNavCard {
+  background: rgba(255,255,255,0.93);
+  border: 6px ridge #4f7a28; border-radius: 12px;
+  box-shadow: 0 0 0 4px #8bbf4d, 0 6px 18px rgba(0,0,0,0.45);
+  max-width: 34em; margin: 0 auto 1.2em; padding: 0.5em 1.6em 1.1em;
+  text-align: center; color: #2f4d18;
+}
+.gameNavCard h2 { margin: 0.3em 0 0.2em; font-size: 1.5em; }
+.gameNavIntro { margin: 0 0 0.6em; font-style: italic; color: #4f7a28; line-height: 1.3; }
+.gameNav { display: flex; flex-wrap: wrap; gap: 0.5em; justify-content: center; margin: 0.8em 0 0.2em; }
+.gameNavLink {
+  font-family: inherit; font-weight: bold; text-decoration: none;
+  background: #8bbf4d; color: #1c2f0e; border: 3px solid #2f4d18;
+  border-radius: 999px; padding: 0.3em 1em; font-size: 0.95em;
+  transition: transform 0.1s, background 0.15s;
+}
+.gameNavLink:hover { background: #a6d96a; transform: scale(1.06); }
+.gameNavLink[aria-current="page"] { background: #2f4d18; color: #eaffd6; cursor: default; }
+.gameNote { font-size: 0.8em; color: #556; margin: 0.7em 0 0; min-height: 1em; }
+
+/* ---------- season leaderboard + past-raids archive (game) ---------- */
+.lbSection, .archiveSection { padding: 0.4em 1em; }
+.lbPanel, .archivePanel {
+  background: rgba(255,255,255,0.93);
+  border: 6px ridge #4f7a28; border-radius: 12px;
+  box-shadow: 0 0 0 4px #8bbf4d, 0 6px 18px rgba(0,0,0,0.45);
+  max-width: 36em; margin: 0 auto 1.2em; padding: 0.6em 1.6em 1.3em;
+  text-align: center; color: #2f4d18;
+}
+.lbPanel h2, .archivePanel h2 { margin: 0.4em 0 0.2em; font-size: 1.6em; }
+.lbIntro, .archiveIntro { margin: 0 0 0.5em; font-style: italic; font-size: 0.98em; color: #4f7a28; line-height: 1.3; }
+.lbIntro small, .archiveIntro small { font-size: 0.78em; color: #778; }
+.lbIntro code, .lbEmpty code, .archiveIntro code, .archiveEmpty code {
+  background: #2f4d18; color: #eaffd6; border-radius: 4px; padding: 0 0.35em; font-size: 0.92em;
+}
+.lbSeason, .archiveSeason {
+  display: inline-block; font-weight: bold; color: #1c2f0e;
+  background: #e0b341; border: 2px solid #2f4d18; border-radius: 999px;
+  padding: 0.12em 0.9em; margin: 0 0 0.7em; font-size: 0.88em;
+}
+.lbEmpty, .archiveEmpty { color: #4f7a28; font-style: italic; }
+
+/* leaderboard rows (extends the poll's bar idiom with its own classes) */
+.lbList { list-style: none; margin: 0.3em 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.45em; text-align: left; }
+.lbRow { display: flex; align-items: center; gap: 0.6em; background: #f7fbef; border: 2px solid #cfe6a8; border-radius: 8px; padding: 0.45em 0.6em; }
+.lbRow.lbTop { background: #eaf6d8; border-color: #8bbf4d; }
+.lbRank { font-size: 1.15em; font-weight: bold; min-width: 1.8em; text-align: center; color: #2f4d18; font-variant-numeric: tabular-nums; }
+.lbWho { flex: 1; min-width: 0; }
+.lbName { display: block; font-weight: bold; color: #2f4d18; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lbBar { display: block; height: 0.8em; margin-top: 0.28em; border: 1px solid #2f4d18; border-radius: 5px; overflow: hidden; background: #eee; }
+.lbBarFill { display: block; height: 100%; background: linear-gradient(90deg, #6fae34, #a6d96a); transition: width 0.5s ease; }
+.lbDmg { font-weight: bold; color: #2f4d18; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lbDmgLbl { font-size: 0.7em; font-weight: normal; color: #4f7a28; text-transform: uppercase; }
+
+/* past-raids archive items */
+.archiveList { list-style: none; margin: 0.3em 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.55em; text-align: left; }
+.archiveItem { background: #f7fbef; border: 2px solid #cfe6a8; border-radius: 8px; padding: 0.5em 0.7em; }
+.archiveTop { display: flex; justify-content: space-between; align-items: baseline; gap: 0.4em 0.6em; flex-wrap: wrap; }
+.archiveWeek { font-size: 0.76em; font-weight: bold; color: #4f7a28; text-transform: uppercase; letter-spacing: 0.04em; }
+.archiveBoss { font-size: 1.12em; font-weight: bold; color: #2f4d18; }
+.archiveBadge { font-size: 0.76em; font-weight: bold; border-radius: 999px; padding: 0.12em 0.7em; border: 2px solid #2f4d18; white-space: nowrap; }
+.archiveBadge.downed { background: #6fae34; color: #10240a; }
+.archiveBadge.wiped { background: #c0563a; color: #fff; }
+.archiveBadge.pending { background: #fff0d4; color: #6a4a10; border-color: #e0b341; }
+.archiveBadge.live { background: #e0843a; color: #fff; }
+.archiveMeta { margin-top: 0.3em; font-size: 0.85em; color: #4f7a28; display: flex; flex-wrap: wrap; gap: 0.15em 1em; }
+.archiveHp { font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) { .lbBarFill { transition: none; } }
+
+/* ---------- how to play (player guide) ---------- */
+.htpSection { padding: 0.4em 1em; }
+.htpPanel {
+  background: rgba(255,255,255,0.93);
+  border: 6px ridge #4f7a28; border-radius: 12px;
+  box-shadow: 0 0 0 4px #8bbf4d, 0 6px 18px rgba(0,0,0,0.45);
+  max-width: 36em; margin: 0 auto 1.2em; padding: 0.6em 1.6em 1.3em;
+  text-align: center; color: #2f4d18;
+}
+.htpPanel h2 { margin: 0.4em 0 0.2em; font-size: 1.6em; }
+.htpPanel h3 { margin: 0.4em 0 0.3em; font-size: 1.3em; }
+.htpIntro { margin: 0 0 0.8em; font-style: italic; font-size: 0.98em; color: #4f7a28; line-height: 1.3; }
+.htpIntro small { font-size: 0.78em; color: #778; }
+.htpPanel a { color: #4f7a28; font-weight: bold; }
+.htpPanel code {
+  background: #2f4d18; color: #eaffd6; border-radius: 4px; padding: 0 0.35em; font-size: 0.92em;
+}
+
+/* weekly-loop steps (numbered, extends the rosterItem card idiom) */
+.htpSteps { list-style: none; counter-reset: htp; margin: 0.3em 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.55em; text-align: left; }
+.htpStep {
+  counter-increment: htp; position: relative;
+  background: #f7fbef; border: 2px solid #cfe6a8; border-radius: 8px;
+  padding: 0.55em 0.7em 0.6em 2.7em;
+}
+.htpStep::before {
+  content: counter(htp); position: absolute; left: 0.6em; top: 0.55em;
+  width: 1.5em; height: 1.5em; line-height: 1.5em; text-align: center;
+  font-weight: bold; font-size: 0.92em; color: #eaffd6; background: #2f4d18; border-radius: 50%;
+}
+.htpStepTitle { display: block; font-weight: bold; color: #2f4d18; margin-bottom: 0.1em; }
+.htpStep small { color: #4f7a28; line-height: 1.35; }
+
+/* command reference rows */
+.cmdList { list-style: none; margin: 0.3em 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.5em; text-align: left; }
+.cmdRow { background: #f7fbef; border: 2px solid #cfe6a8; border-radius: 8px; padding: 0.5em 0.7em; }
+.cmdRow.cmdSub { background: #eaf6d8; border-color: #8bbf4d; }
+.cmdSyntax { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4em; margin-bottom: 0.2em; }
+.cmdDesc { font-size: 0.9em; color: #2f4d18; line-height: 1.35; }
+.cmdAlias { font-size: 0.78em; color: #778; font-style: italic; }
+.subTag {
+  font-size: 0.68em; font-weight: bold; color: #1c2f0e;
+  background: #e0b341; border: 2px solid #2f4d18; border-radius: 999px;
+  padding: 0.05em 0.6em; text-transform: uppercase; letter-spacing: 0.03em;
+}
+.htpAside { font-size: 0.82em; color: #556; font-style: italic; margin: 0.7em 0 0; }
+
+/* good-to-know + faq */
+.htpNotes { text-align: left; margin: 0.3em 0 0; padding-left: 1.2em; color: #2f4d18; line-height: 1.45; }
+.htpNotes li { margin: 0.35em 0; }
+.htpFaq { text-align: left; }
+.htpFaqQ { font-weight: bold; color: #2f4d18; margin: 0.6em 0 0.1em; }
+.htpFaqA { margin: 0 0 0.5em; color: #4f7a28; line-height: 1.4; }
+
 /* ---------- meme wall ---------- */
 .memeWallSection { padding: 1.5em 1em 0.5em; text-align: center; }
 .memeWallHead {
@@ -246,8 +529,13 @@ body {
 }
 
 /* ---------- footer ---------- */
-.okraFooter { background: #fff; text-align: center; padding: 0 0 1.5em; margin-top: 1.5em; }
-.footerBanner { width: 100%; max-width: 1100px; display: block; margin: 0 auto 1em; }
+.okraFooter { background: #fff; text-align: center; padding: 1.8em 0 2em; margin-top: 1.5em; }
+.homeBannerSection { text-align: center; padding: 1.4em 1em 1.4em; }
+.homeBanner {
+  width: 100%; max-width: 1100px; display: block; margin: 0 auto;
+  border: 6px ridge #4f7a28; border-radius: 12px;
+  box-shadow: 0 0 0 4px #8bbf4d, 0 6px 18px rgba(0,0,0,0.45);
+}
 .footerInner { max-width: 46em; margin: 0 auto; padding: 0 1em; color: #2f4d18; }
 .footerTagline { font-style: italic; font-size: 1.2em; margin: 0.2em 0 0.9em; }
 .socials {
@@ -273,3 +561,8 @@ body {
 .footerSong { margin: 0.4em 0; }
 .footerSong a { font-size: 1.2em; color: #2f4d18; }
 .footerMeta { font-size: 0.85em; color: #4f7a28; margin: 0.9em 0 0; }
+
+/* Clickable site banner (back to home) + prominent raid-game CTA button. */
+.okraHomeLink { text-decoration: none; color: inherit; display: inline-block; cursor: pointer; }
+.okraHomeLink:hover .siteTitle { filter: brightness(1.15); }
+.gameCta { display: inline-block; margin: 0.2em auto 0.9em; font-size: 1.15em; padding: 0.55em 1.4em; }
