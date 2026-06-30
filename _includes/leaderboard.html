@@ -7,7 +7,7 @@
     </h2>
     <p class="lbIntro">
       🏆 The okra-patch&rsquo;s hardest hitters this season &mdash; every point of boss damage tallied.<br/>
-      <small>*sign up in chat with <code>!raid</code> &middot; damage is summed from each raid-night battle</small>
+      <small>*sign up in chat with <code>!muster</code> &middot; damage is summed from each raid-night battle</small>
     </p>
     <div id="lbSeason" class="lbSeason" hidden></div>
     <div id="lbBody" class="lbBody">Tallying the harvest&hellip;</div>
@@ -68,7 +68,7 @@
 
   function rowsHtml(entries){
     if(!entries.length){
-      return '<p class="lbEmpty">No damage logged yet this season — jump in with <code>!raid</code> in chat! 🌱</p>';
+      return '<p class="lbEmpty">No damage logged yet this season — jump in with <code>!muster</code> in chat! 🌱</p>';
     }
     const top = entries[0].damage || 1;
     const rank3 = ["🥇", "🥈", "🥉"];

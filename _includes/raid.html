@@ -7,7 +7,7 @@
     </h2>
     <p class="raidIntro">
       🗡️ The whole okra-patch musters against one big bad. Chat while Nikki&rsquo;s live to grow your hero and gear up, then we field the team on raid night.<br/>
-      <small>*sign up in chat with <code>!raid</code> &middot; battle resolves automatically on the live page</small>
+      <small>*sign up in chat with <code>!muster</code> &middot; battle resolves automatically on the live page</small>
     </p>
     <div id="raidBody" class="raidBody">Summoning the boss&hellip;</div>
     <p id="raidNote" class="raidNote"></p>
@@ -95,7 +95,7 @@
 
   function rosterHtml(signups){
     const list = Object.values(signups || {});
-    if(!list.length) return '<p class="raidEmpty">No heroes signed up yet — type <code>!raid</code> in chat to muster! 🌱</p>';
+    if(!list.length) return '<p class="raidEmpty">No heroes signed up yet — type <code>!muster</code> in chat to muster! 🌱</p>';
     list.sort((a, b) => (b.roleRating || 0) - (a.roleRating || 0));
     return '<div class="roster">' + list.map((p) =>
       '<div class="rosterItem">' +
@@ -149,7 +149,7 @@
       const downed = res.downed;
       raidBody.innerHTML = bossHead +
         '<div class="raidStatus ' + (downed ? "downed" : "wiped") + '">' +
-          (downed ? "💀 BOSS DOWNED — the patch prevails! 🌱" : "🪦 WIPE — we&rsquo;ll get it next week.") + '</div>' +
+          (downed ? "💀 BOSS DOWNED — the patch prevails! 🌱" : "🥀 WIPE — we&rsquo;ll get it next week.") + '</div>' +
         (typeof res.bossHpRemaining === "number"
           ? '<p class="raidResultLine">Final boss HP: ' + num(res.bossHpRemaining) + ' / ' + num(boss.hp) + '</p>' : "") +
         '<a class="pollBtn liveCta" href="' + ARENA_URL + '">▶ WATCH THE REPLAY</a>' +
@@ -162,7 +162,7 @@
     // signup / locked
     const heading = phase === "locked"
       ? '<div class="raidPhaseTag locked">🔒 Roster locked — battle imminent</div>'
-      : '<div class="raidPhaseTag signup">📣 Muster open — sign up in chat with <code>!raid</code></div>';
+      : '<div class="raidPhaseTag signup">📣 Muster open — sign up in chat with <code>!muster</code></div>';
     raidBody.innerHTML = bossHead + heading +
       '<p class="cdCaption">Raid night begins in</p>' +
       countdownHtml(cfg.startsAt) +
