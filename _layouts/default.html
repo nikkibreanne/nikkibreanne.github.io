@@ -30,6 +30,10 @@
     {{ content }}
   </main>
 
+  {% if page.game %}
+  <div class="gameFooterNav">{% include game-nav.html current=page.game %}</div>
+  {% endif %}
+
   <footer class="okraFooter">
     <div class="footerInner">
       <nav class="socials" aria-label="Nikki's socials">
