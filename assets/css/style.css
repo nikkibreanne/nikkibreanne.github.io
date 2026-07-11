@@ -344,8 +344,14 @@ body {
 .archiveBadge.live { background: #e0843a; color: #fff; }
 .archiveMeta { margin-top: 0.3em; font-size: 0.85em; color: #4f7a28; display: flex; flex-wrap: wrap; gap: 0.15em 1em; }
 .archiveHp { font-variant-numeric: tabular-nums; }
+/* clickable rows deep-link to that week's replay (/arena/?s=..&w=..) */
+.archiveItem--link { padding: 0; }
+.archiveItemLink { display: block; padding: 0.5em 0.7em; border-radius: 6px; color: inherit; text-decoration: none; transition: background 0.15s ease; }
+.archiveItem--link:hover, .archiveItem--link:focus-within { border-color: #6fae34; background: #eef7dd; }
+.archiveWatch { display: block; margin-top: 0.35em; font-size: 0.8em; font-weight: bold; color: #4f7a28; }
+.archiveItem--link:hover .archiveWatch, .archiveItem--link:focus-within .archiveWatch { text-decoration: underline; }
 
-@media (prefers-reduced-motion: reduce) { .lbBarFill { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .lbBarFill { transition: none; } .archiveItemLink { transition: none; } }
 
 /* ---------- how to play (player guide) ---------- */
 .htpSection { padding: 0.4em 1em; }

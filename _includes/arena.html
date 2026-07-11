@@ -51,6 +51,12 @@
   const replayBtn = document.getElementById("replayBtn");
 
   const MS_PER_EVENT = 1200;
+  // Archive deep-link: /arena/?s=<seasonId>&w=<weekId> pins the player to ONE
+  // past week (loads raids/<s>/<w>/combat) instead of following config/raid.
+  const qs = new URLSearchParams(location.search);
+  const pinSeason = qs.get("s");
+  const pinWeek = qs.get("w");
+  const archiveMode = Boolean(pinSeason && pinWeek);
   const ROLE_LABEL = { tank: "🛡️", healer: "✚", dps: "⚔️" };
   const num = (n) => (n || 0).toLocaleString("en-US");
   const clampPct = (part, whole) => whole ? Math.max(0, Math.min(100, Math.round((part / whole) * 100))) : 0;
@@ -181,7 +187,7 @@
     // Production is the default everywhere (including localhost). Opt INTO the
     // local Firebase emulator with ?dev on the URL — local backend testing only;
     // every normal visit reads production.
-    if (new URLSearchParams(location.search).has("dev")) {
+    if (qs.has("dev")) {
       try { dbMod.connectDatabaseEmulator(db, "127.0.0.1", 9000); console.info("kennyBot: using local Firebase emulator"); } catch (e) {}
     }
     // Correct for client clock skew so every viewer worldwide reveals the same
@@ -191,6 +197,14 @@
 
   if(!db){
     showOffline();
+  } else if(archiveMode){
+    // Pinned to a specific past week — relabel the stage as a replay and load
+    // that week's combat log directly, independent of the live config/raid pointer.
+    const heading = document.querySelector("#battle h2 span");
+    if(heading) heading.textContent = "RAID — REPLAY";
+    const cta = document.querySelector(".liveCta");
+    if(cta){ cta.textContent = "← back to past raids"; cta.setAttribute("href", "/archive/"); }
+    loadReal({ seasonId: pinSeason, weekId: pinWeek }).catch(() => showOffline());
   } else {
     onValue(ref(db, "config/raid"), (snap) => {
       const cfg = snap.val();
