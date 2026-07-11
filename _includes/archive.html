@@ -12,10 +12,10 @@
     <div id="archiveSeason" class="archiveSeason" hidden></div>
     <div id="archiveBody" class="archiveBody">Reading the chronicles&hellip;</div>
 
-    <!-- TODO follow-up: per-raid "watch the replay" deep-links. The /arena/ player
-         currently always reads config/raid (the ACTIVE week); replaying an
-         archived raid needs /arena/ to accept ?s=<seasonId>&w=<weekId> query
-         params and load raids/<s>/<w>/combat for that specific week instead. -->
+    <!-- Each simulated raid links to its own replay: /arena/?s=<seasonId>&w=<weekId>
+         tells the arena player to load raids/<s>/<w>/combat for that specific week
+         instead of following config/raid (the active week). Weeks with no combat
+         log yet (upcoming/locked) render as plain, unlinked rows. -->
     <p id="archiveNote" class="gameNote"></p>
   </div>
 </section>
@@ -48,6 +48,12 @@
   const esc = (s) => { const d = document.createElement("div"); d.textContent = (s == null ? "" : String(s)); return d.innerHTML; };
   const weekLabel = (w) => { const n = String(w).replace(/\D/g, ""); return n ? ("Week " + n) : esc(w); };
 
+  /* Deep-link to a specific past raid's replay. Preserves ?dev so archive links
+     keep pointing at the emulator during local backend testing. */
+  const devSuffix = new URLSearchParams(location.search).has("dev") ? "&amp;dev" : "";
+  const arenaHref = (seasonId, week) =>
+    "/arena/?s=" + encodeURIComponent(seasonId) + "&amp;w=" + encodeURIComponent(week) + devSuffix;
+
   /* uid -> displayName cache for the MVP name */
   const nameCache = {};
   async function resolveName(uid){
@@ -72,8 +78,8 @@
     return { cls: "pending", text: "⏳ UPCOMING" };
   }
 
-  function itemHtml(week, name, badge, hpLine, mvpName){
-    return '<li class="archiveItem">' +
+  function itemHtml(href, week, name, badge, hpLine, mvpName){
+    const inner =
         '<div class="archiveTop">' +
           '<span><span class="archiveWeek">' + esc(weekLabel(week)) + '</span> ' +
             '<span class="archiveBoss">' + esc(name) + '</span></span>' +
@@ -83,8 +89,15 @@
           '<div class="archiveMeta">' +
             (hpLine ? '<span class="archiveHp">' + hpLine + '</span>' : '') +
             (mvpName ? '<span class="archiveMvp">⭐ MVP: ' + esc(mvpName) + '</span>' : '') +
-          '</div>' : '') +
-      '</li>';
+          '</div>' : '');
+    if(href){
+      return '<li class="archiveItem archiveItem--link">' +
+          '<a class="archiveItemLink" href="' + href + '">' + inner +
+            '<span class="archiveWatch">▶ Watch the replay</span>' +
+          '</a>' +
+        '</li>';
+    }
+    return '<li class="archiveItem">' + inner + '</li>';
   }
 
   /* Build the newest-first archive from the raids + bosses season nodes. */
@@ -111,7 +124,10 @@
         hpLine = "Final boss HP: " + num(res.bossHpRemaining) + (typeof maxHp === "number" ? " / " + num(maxHp) : "");
       }
       const mvpName = res.mvp ? await resolveName(res.mvp) : null;
-      return itemHtml(w, name, badge, hpLine, mvpName);
+      // A replay exists once the battle has been simulated (live or finished).
+      const replayable = !!(raid.combat && raid.combat.log);
+      const href = replayable ? arenaHref(seasonId, w) : null;
+      return itemHtml(href, w, name, badge, hpLine, mvpName);
     }));
     body.innerHTML = '<ol class="archiveList">' + rows.join("") + '</ol>';
   }
