@@ -1,0 +1,88 @@
+<section class="infoSection">
+  <div class="infoPanel" id="nikkifacts">
+    <h2>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+      <span>NIKKI FACTS</span>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+    </h2>
+    <p class="infoDisclaimer">
+      ⚠️ Not peer-reviewed, not fact-checked, occasionally true. Inside jokes and tall tales
+      about Nikki BreAnne &mdash; submitted by chat, approved by mods, believe at your own risk.
+    </p>
+
+    {% assign facts = site.data.facts %}
+    {% if facts and facts.size > 0 %}
+    <ol class="factList">
+      {% for fact in facts %}
+      <li class="factItem">{{ fact.text | escape }}</li>
+      {% endfor %}
+    </ol>
+    {% endif %}
+
+    <!-- Community-approved facts (via `!fact suggest` → mod approval), read live from
+         Firebase `facts/`. Read-only; degrades to just the curated list above when
+         Firebase is empty or unreachable. -->
+    <div id="liveFacts"></div>
+    <p id="factNote" class="factNote"></p>
+
+    <p class="factSubmitCta">
+      Got a fact? Type <code>!fact suggest &lt;your fact&gt;</code> in
+      <a href="https://www.twitch.tv/nikkibreanne" target="_blank" rel="noopener noreferrer">Nikki&rsquo;s chat</a>
+      &mdash; a mod approves the good ones and they land right here.
+    </p>
+  </div>
+</section>
+
+<script type="module">
+  /* The apiKey is public by design; the database is protected by RTDB rules
+   * (facts/ is client-READ-ONLY — only kennyBot writes approved facts). */
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3aWINWIBQ4rM_Ua2EOtr_Tw9rGhYdoS0",
+    authDomain: "okrafans.firebaseapp.com",
+    databaseURL: "https://okrafans-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "okrafans",
+    storageBucket: "okrafans.firebasestorage.app",
+    messagingSenderId: "56095817168",
+    appId: "1:56095817168:web:6355809cae65797ca28dd5"
+  };
+
+  const live = document.getElementById("liveFacts");
+  const note = document.getElementById("factNote");
+  const esc = (s) => { const d = document.createElement("div"); d.textContent = (s == null ? "" : String(s)); return d.innerHTML; };
+
+  function render(facts){
+    // facts: array of { text, by } — newest first.
+    if(!facts.length){ live.innerHTML = ""; return; }
+    live.innerHTML =
+      '<p class="factsCommunityHead">🌟 Straight from chat (viewer-submitted):</p>' +
+      '<ol class="factList factListCommunity">' +
+        facts.map((f) =>
+          '<li class="factItem">' + esc(f.text) +
+            (f.by ? ' <span class="factBy">&mdash; ' + esc(f.by) + '</span>' : '') +
+          '</li>').join("") +
+      '</ol>';
+  }
+
+  try {
+    const appMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const dbMod  = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+    const { ref, onValue } = dbMod;
+    const db = dbMod.getDatabase(appMod.initializeApp(firebaseConfig));
+    // Opt INTO the local emulator with ?dev (local testing only; normal visits hit prod).
+    if (new URLSearchParams(location.search).has("dev")) {
+      try { dbMod.connectDatabaseEmulator(db, "127.0.0.1", 9000); } catch (e) {}
+    }
+    onValue(ref(db, "facts"), (snap) => {
+      const val = snap.val() || {};
+      const facts = Object.keys(val)
+        .map((k) => val[k])
+        .filter((f) => f && f.text)
+        .sort((a, b) => (b.at || 0) - (a.at || 0)); // newest first
+      note.textContent = "";
+      render(facts);
+    }, () => { note.textContent = ""; live.innerHTML = ""; });
+  } catch (e) {
+    /* Firebase unreachable → the curated list still shows. */
+    live.innerHTML = "";
+  }
+</script>
