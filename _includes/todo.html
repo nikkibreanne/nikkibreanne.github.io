@@ -1,0 +1,152 @@
+<section class="infoSection">
+  <div class="infoPanel" id="todoboard">
+    <h2>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+      <span>NIKKI&rsquo;S TO-DO</span>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+    </h2>
+    <p class="infoDisclaimer">
+      🗓️ The running list, organized by day &mdash; managed live from
+      <a href="https://www.twitch.tv/nikkibreanne" target="_blank" rel="noopener noreferrer">Nikki&rsquo;s chat</a>
+      by the mods. Items get crossed off as they get done.
+    </p>
+
+    <div class="todoActions">
+      <button id="todoCopy" class="pollBtn todoCopyBtn" type="button" disabled>📋 Copy for Discord</button>
+      <span id="todoCopyNote" class="todoCopyNote" aria-live="polite"></span>
+    </div>
+
+    <!-- Rendered live from Firebase `todos/` (Admin-written by kennyBot via `!todo`;
+         client-READ-ONLY). Degrades to a friendly empty state when unreachable. -->
+    <div id="todoBoard">Loading the list&hellip;</div>
+    <p id="todoNote" class="factNote"></p>
+  </div>
+</section>
+
+<style>
+  .todoActions { display: flex; align-items: center; gap: .7em; flex-wrap: wrap; margin: .2em 0 .4em; }
+  .todoCopyBtn:disabled { opacity: .5; cursor: default; }
+  .todoCopyNote { font-size: .9em; font-weight: 600; color: #2f4f14; }
+  .todoDay { margin: 1.15em 0 0; }
+  .todoDayHead {
+    margin: 0 0 .4em; padding-bottom: .2em; font-weight: 700; color: #2f4f14;
+    border-bottom: 2px dashed rgba(79, 122, 40, .45);
+  }
+  .todoDayHead .todoDayCount { font-weight: 500; font-size: .85em; opacity: .6; }
+  .todoList { list-style: none; margin: 0; padding: 0; }
+  .todoItem { display: flex; align-items: baseline; gap: .5em; padding: .32em 0; line-height: 1.35; }
+  .todoItem::before { content: "\2610"; color: #4f7a28; font-weight: 700; flex: 0 0 auto; }
+  .todoEmpty { text-align: center; opacity: .85; padding: 1.4em 0; }
+  @media (prefers-color-scheme: dark) {
+    .todoDayHead, .todoCopyNote { color: #cfe8b0; }
+  }
+</style>
+
+<script type="module">
+  /* The apiKey is public by design; the database is protected by RTDB rules
+   * (todos/ is client-READ-ONLY — only kennyBot writes items via `!todo`). */
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3aWINWIBQ4rM_Ua2EOtr_Tw9rGhYdoS0",
+    authDomain: "okrafans.firebaseapp.com",
+    databaseURL: "https://okrafans-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "okrafans",
+    storageBucket: "okrafans.firebasestorage.app",
+    messagingSenderId: "56095817168",
+    appId: "1:56095817168:web:6355809cae65797ca28dd5"
+  };
+
+  const board    = document.getElementById("todoBoard");
+  const note     = document.getElementById("todoNote");
+  const copyBtn  = document.getElementById("todoCopy");
+  const copyNote = document.getElementById("todoCopyNote");
+  const esc = (s) => { const d = document.createElement("div"); d.textContent = (s == null ? "" : String(s)); return d.innerHTML; };
+
+  let current = []; // latest todos (sorted by date, then id) — what the copy button emits
+
+  // "Monday, Jul 14" from a YYYY-MM-DD, parsed as a plain calendar date so the
+  // weekday label never shifts with the viewer's time zone. Returns plain text.
+  function fmtDay(date){
+    const p = String(date).split("-").map(Number);
+    if (p.length !== 3 || !p[0]) return String(date);
+    return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+  }
+
+  function render(todos){
+    if (!todos.length){
+      board.innerHTML = '<p class="todoEmpty">🌱 Nothing on the list right now &mdash; check back soon!</p>';
+      return;
+    }
+    // Group consecutive same-day items (list is already sorted by date, then id).
+    const groups = [];
+    let cur = null;
+    for (const t of todos){
+      if (!cur || cur.date !== t.date){ cur = { date: t.date, items: [] }; groups.push(cur); }
+      cur.items.push(t);
+    }
+    board.innerHTML = groups.map((g) =>
+      '<div class="todoDay">' +
+        '<p class="todoDayHead">' + esc(fmtDay(g.date)) +
+          ' <span class="todoDayCount">(' + g.items.length + ')</span></p>' +
+        '<ul class="todoList">' +
+          g.items.map((t) => '<li class="todoItem">' + esc(t.text) + '</li>').join("") +
+        '</ul>' +
+      '</div>').join("");
+  }
+
+  // Discord-flavored Markdown: an `##` heading, a bold header per day, `-` bullets.
+  function toMarkdown(todos){
+    if (!todos.length) return "";
+    const out = ["## 📋 Nikki's To-Do"];
+    let cur = null;
+    for (const t of todos){
+      if (cur !== t.date){ cur = t.date; out.push("", "**" + fmtDay(t.date) + "**"); }
+      out.push("- " + t.text);
+    }
+    return out.join("\n");
+  }
+
+  async function copyList(){
+    const md = toMarkdown(current);
+    if (!md) return;
+    let ok = false;
+    try {
+      await navigator.clipboard.writeText(md);
+      ok = true;
+    } catch (e) {
+      // Fallback for browsers without the async clipboard API / insecure contexts.
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = md; ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+      } catch (e2) { ok = false; }
+    }
+    copyNote.textContent = ok ? "Copied! Paste into Discord. ✅" : "Couldn't copy — try selecting the list manually.";
+    setTimeout(() => { copyNote.textContent = ""; }, 3000);
+  }
+  copyBtn.addEventListener("click", copyList);
+
+  try {
+    const appMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const dbMod  = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+    const { ref, onValue } = dbMod;
+    const db = dbMod.getDatabase(appMod.initializeApp(firebaseConfig));
+    // Opt INTO the local emulator with ?dev (local testing only; normal visits hit prod).
+    if (new URLSearchParams(location.search).has("dev")) {
+      try { dbMod.connectDatabaseEmulator(db, "127.0.0.1", 9000); } catch (e) {}
+    }
+    onValue(ref(db, "todos"), (snap) => {
+      const val = snap.val() || {};
+      current = Object.keys(val).map((k) => val[k])
+        .filter((t) => t && t.text)
+        .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.id || 0) - (b.id || 0)));
+      note.textContent = "";
+      copyBtn.disabled = current.length === 0;
+      render(current);
+    }, () => { board.innerHTML = '<p class="todoEmpty">The list is offline right now &mdash; refresh to try again.</p>'; copyBtn.disabled = true; });
+  } catch (e) {
+    board.innerHTML = '<p class="todoEmpty">The list is offline right now.</p>';
+    copyBtn.disabled = true;
+  }
+</script>
