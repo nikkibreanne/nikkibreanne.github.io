@@ -26,8 +26,8 @@
 - group: "Loot & raids"
   blurb: "Chat loot drops, the weekly boss, and the leaderboard."
   commands:
-    - cmd: "!grab"
-      aliases: "!loot"
+    - cmd: "!loot"
+      aliases: "!claim"
       sub: true
       desc: "Enter the drawing for the active loot drop. One winner is drawn when the window closes and gets the item. 🎲"
     - cmd: "!muster"
