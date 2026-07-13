@@ -1,7 +1,10 @@
-# Nikki BreAnne FUN FACTS — inside jokes, tall tales, and the occasional true
-# thing. These curated ones always show on /info/. Community submissions (viewers
-# type `!fact suggest <fact>` in chat) appear below once a mod approves them.
-# Keep them FUN. Add/edit freely.
+# Nikki BreAnne FUN FACTS — inside jokes, tall tales, and the occasional true thing.
+#
+# OFFLINE FALLBACK ONLY. At runtime /info/ renders the curated facts live from
+# Firebase (the bot seeds them there so `!fact` in chat shares the exact same set),
+# and this list is shown only until that loads / if Firebase is unreachable.
+# The CANONICAL source is kennyBot src/content/facts.js — edit there and mirror
+# here (keep the two in sync) so the offline fallback matches what viewers see.
 - text: "🎂 Freshly harvested every June 14th — and, for the record, a perpetual 25."
 - text: "Ghost, her mini Pomeranian, is the actual star of the channel. Nikki just works here. 🐾"
 - text: "Her heart belongs to fictional men: Link, Leon Kennedy, and a rotating roster of anime boyfriends. 3D men could never. 💘"
