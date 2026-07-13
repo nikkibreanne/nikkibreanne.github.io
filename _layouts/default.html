@@ -26,13 +26,13 @@
     <div class="wiggleOkra"><img class="okraSpin" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt="okra"/></div>
   </header>
 
+  {% if page.game %}
+  <div class="gameTopNav">{% include game-nav.html current=page.game %}</div>
+  {% endif %}
+
   <main>
     {{ content }}
   </main>
-
-  {% if page.game %}
-  <div class="gameFooterNav">{% include game-nav.html current=page.game %}</div>
-  {% endif %}
 
   <footer class="okraFooter">
     <div class="footerInner">

@@ -382,9 +382,11 @@ body {
 .gameNavLink:hover { background: #a6d96a; transform: scale(1.06); }
 .gameNavLink[aria-current="page"] { background: #2f4d18; color: #eaffd6; cursor: default; }
 .gameNote { font-size: 0.8em; color: #556; margin: 0.7em 0 0; min-height: 1em; }
-/* Game-page nav rendered once by the layout, as a consistent band just above the
-   site footer (see _layouts/default.html + _includes/game-nav.html). */
-.gameFooterNav { padding: 1.4em 1em 0.4em; text-align: center; }
+/* Game-page nav rendered once by the layout, as a clean white band directly under
+   the site header (see _layouts/default.html + _includes/game-nav.html). The white
+   background keeps the pills off the page's okra photo backdrop. */
+.gameTopNav { background: #fff; padding: 0.2em 1em 0.9em; text-align: center; }
+.gameTopNav .gameNav { margin-top: 0; }
 
 /* ---------- season leaderboard + past-raids archive (game) ---------- */
 .lbSection, .archiveSection { padding: 0.4em 1em; }
