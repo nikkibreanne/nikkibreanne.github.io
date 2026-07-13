@@ -362,16 +362,6 @@ body {
 }
 
 /* ---------- okra-game cross nav (home + game pages) ---------- */
-.gameNavSection { padding: 0.4em 1em; }
-.gameNavCard {
-  background: rgba(255,255,255,0.93);
-  border: 6px ridge #4f7a28; border-radius: 12px;
-  box-shadow: 0 0 0 4px #8bbf4d, 0 6px 18px rgba(0,0,0,0.45);
-  max-width: 34em; margin: 0 auto 1.2em; padding: 0.5em 1.6em 1.1em;
-  text-align: center; color: #2f4d18;
-}
-.gameNavCard h2 { margin: 0.3em 0 0.2em; font-size: 1.5em; }
-.gameNavIntro { margin: 0 0 0.6em; font-style: italic; color: #4f7a28; line-height: 1.3; }
 .gameNav { display: flex; flex-wrap: wrap; gap: 0.5em; justify-content: center; margin: 0.8em 0 0.2em; }
 .gameNavLink {
   font-family: inherit; font-weight: bold; text-decoration: none;
