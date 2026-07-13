@@ -3,28 +3,19 @@ layout: default
 title: OKRAFANS — Nikki BreAnne
 ---
 
-<section class="okraBio">
-  <h2>
-    <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
-    Meet Nikki
-    <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
-  </h2>
-  <p>🎂 Nikki BreAnne is <strong>25 years old</strong>, freshly harvested on her birthday, <strong>June 14th</strong>. 🌱</p>
-</section>
-
-{% include poll.html %}
-
-<section class="gameNavSection">
-  <div class="gameNavCard">
-    <h2>
-      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
-      <span>OKRA RAID GAME</span>
-      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
-    </h2>
-    <p class="gameNavIntro">🗡️ Muster the okra-patch, field the team, and watch the boss fall — all from chat.</p>
-    <a class="pollBtn gameCta" href="{{ '/raid/' | relative_url }}">▶ ENTER THE RAID</a>
-    {% include game-nav.html %}
-  </div>
+<section class="infoTeaserSection">
+  <a class="infoTeaserCard" href="{{ '/info/' | relative_url }}">
+    <span class="infoTeaserTitle">🌟 NIKKI FUN FACTS</span>
+    <span class="infoTeaserSub">Peer-review-optional facts about Nikki &mdash; and submit your own. →</span>
+  </a>
+  <a class="infoTeaserCard" href="{{ '/okramarket/' | relative_url }}">
+    <span class="infoTeaserTitle">📈 OKRAMARKET</span>
+    <span class="infoTeaserSub">Bet credits on live prediction markets. →</span>
+  </a>
+  <a class="infoTeaserCard" href="{{ '/raid/' | relative_url }}">
+    <span class="infoTeaserTitle">🗡️ OKRA RAID GAME</span>
+    <span class="infoTeaserSub">Muster the patch, field the team, watch the boss fall &mdash; all from chat. →</span>
+  </a>
 </section>
 
 <section class="memeWallSection">

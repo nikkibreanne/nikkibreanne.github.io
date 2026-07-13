@@ -63,6 +63,53 @@ body {
 .okraBio h2 { margin: 0 0 0.5em; font-size: 1.6em; }
 .okraBio p { margin: 0.4em 0; font-size: 1.1em; line-height: 1.4; }
 
+/* ---------- home-page teaser card → /info/ ---------- */
+.infoTeaserSection { padding: 0.4em 1em; }
+.infoTeaserCard {
+  display: block; max-width: 34em; margin: 1.2em auto; padding: 0.7em 1.4em;
+  background: rgba(255,255,255,0.93); border: 4px ridge #4f7a28; border-radius: 12px;
+  box-shadow: 0 0 0 3px #8bbf4d, 0 4px 12px rgba(0,0,0,0.35);
+  text-align: center; color: #2f4d18; text-decoration: none;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+.infoTeaserCard:hover { transform: scale(1.02); background: #f3fae4; }
+.infoTeaserTitle { display: block; font-size: 1.4em; font-weight: bold; letter-spacing: 0.03em; }
+.infoTeaserSub { display: block; font-size: 0.95em; color: #4f7a28; margin-top: 0.15em; }
+
+/* ---------- /info/ facts page ---------- */
+.infoSection { padding: 0.4em 1em; }
+.infoPanel {
+  background: rgba(255,255,255,0.93); border: 6px ridge #4f7a28; border-radius: 12px;
+  box-shadow: 0 0 0 4px #8bbf4d, 0 6px 18px rgba(0,0,0,0.45);
+  max-width: 40em; margin: 0 auto 1.2em; padding: 0.6em 1.6em 1.3em;
+  text-align: center; color: #2f4d18;
+}
+.infoPanel h2 { margin: 0.4em 0 0.4em; font-size: 1.6em; }
+.infoDisclaimer {
+  font-size: 0.9em; font-style: italic; color: #6a4a10;
+  background: #fff0d4; border: 2px solid #e0b341; border-radius: 8px;
+  padding: 0.5em 0.8em; margin: 0 0 1em; line-height: 1.35;
+}
+.factList { list-style: none; margin: 0.3em 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.5em; text-align: left; counter-reset: fact; }
+.factItem {
+  background: #f7fbef; border: 2px solid #cfe6a8; border-radius: 8px;
+  padding: 0.55em 0.8em 0.55em 2.4em; position: relative; font-size: 1.05em; line-height: 1.35;
+}
+.factItem::before {
+  counter-increment: fact; content: "★ " counter(fact);
+  position: absolute; left: 0.6em; top: 0.55em; font-size: 0.72em; font-weight: bold;
+  color: #4f7a28;
+}
+.factBy { font-size: 0.82em; font-style: italic; color: #4f7a28; }
+.factsCommunityHead { margin: 1.1em 0 0.3em; font-weight: bold; color: #4f7a28; text-align: left; }
+.factNote { font-size: 0.8em; color: #556; margin: 0.6em 0 0; min-height: 1em; }
+.factSubmitCta {
+  margin: 1.2em 0 0.2em; font-size: 0.98em; color: #2f4d18; line-height: 1.4;
+  border-top: 2px dashed #8bbf4d; padding-top: 0.9em;
+}
+.factSubmitCta code { background: #2f4d18; color: #eaffd6; border-radius: 4px; padding: 0 0.35em; font-size: 0.92em; }
+@media (prefers-reduced-motion: reduce) { .infoTeaserCard { transition: none; } }
+
 /* ---------- poll (OKRAMARKET) ---------- */
 .pollSection { padding: 0.4em 1em; }
 .okraPoll {
@@ -117,6 +164,45 @@ body {
 .pollBarYes { background: #6fae34; }
 .pollBarNo { background: #c0563a; }
 .pollNote { font-size: 0.8em; color: #556; margin: 0.6em 0 0; min-height: 1em; }
+
+/* ---------- OKRAMARKET board (read-only; wagering happens in chat) ---------- */
+.marketBody { margin-top: 0.4em; }
+.mktQuestion { font-size: 1.35em; font-weight: bold; color: #2f4d18; margin: 0.2em 0 0.35em; line-height: 1.25; }
+.mktStatus { display: inline-block; font-size: 0.82em; font-weight: bold; border-radius: 999px; padding: 0.15em 0.8em; margin: 0 0 0.8em; border: 2px solid #2f4d18; }
+.mktStatus.mkt-open { background: #6fae34; color: #10240a; }
+.mktStatus.mkt-closed { background: #fff0d4; color: #6a4a10; border-color: #e0b341; }
+.mktStatus.mkt-resolved { background: #2f4d18; color: #eaffd6; }
+.mktStatus.mkt-resolving { background: #eee; color: #556; }
+.mktOptions { display: flex; flex-direction: column; gap: 0.5em; text-align: left; }
+.mktOption { background: #f7fbef; border: 2px solid #cfe6a8; border-radius: 8px; padding: 0.5em 0.7em; }
+.mktOption.mktWin { border-color: #6fae34; background: #eef7dd; box-shadow: 0 0 0 2px #6fae34 inset; }
+.mktOptTop { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5em; }
+.mktOptName { font-weight: bold; color: #2f4d18; }
+.mktOptMult { font-variant-numeric: tabular-nums; font-weight: bold; color: #4f7a28; white-space: nowrap; }
+.mktBar { height: 0.9em; margin: 0.3em 0 0.25em; border: 1px solid #2f4d18; border-radius: 5px; overflow: hidden; background: #eee; }
+.mktBarFill { height: 100%; background: linear-gradient(90deg, #6fae34, #a6d96a); transition: width 0.5s ease; }
+.mktOptFoot { font-size: 0.8em; color: #4f7a28; font-variant-numeric: tabular-nums; }
+.mktMeta { margin: 0.7em 0 0.2em; font-size: 0.9em; font-weight: bold; color: #4f7a28; }
+.mktCta { margin: 0.5em 0 0; font-size: 0.95em; color: #2f4d18; line-height: 1.4; }
+.mktCta code { background: #2f4d18; color: #eaffd6; border-radius: 4px; padding: 0 0.35em; font-size: 0.9em; }
+@media (prefers-reduced-motion: reduce) { .mktBarFill { transition: none; } }
+
+/* concurrent markets: a grid of cards, each with a free community vote */
+.marketGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(18em, 1fr)); gap: 1em; margin-top: 0.6em; text-align: left; }
+.mktCard { background: rgba(255,255,255,0.96); border: 3px solid #4f7a28; border-radius: 12px; padding: 0.7em 0.9em 0.9em; box-shadow: 0 3px 10px rgba(0,0,0,0.18); display: flex; flex-direction: column; }
+.mktCard .mktQuestion { font-size: 1.08em; margin: 0 0 0.4em; }
+.mktCard .mktStatus { align-self: flex-start; }
+.mktCard .mktMeta { margin-top: 0.55em; }
+.mktOption.mktNo .mktBarFill { background: linear-gradient(90deg, #c0563a, #e08b6a); }
+.mktVote { margin-top: 0.85em; padding-top: 0.7em; border-top: 1px dashed #cfe6a8; }
+.cvTitle { margin: 0 0 0.45em; font-weight: bold; color: #2f4d18; font-size: 0.95em; }
+.cvFree { font-weight: normal; font-style: italic; color: #778; font-size: 0.82em; }
+.cvBtns { display: flex; gap: 0.5em; }
+.cvBtns .pollBtn { flex: 1; font-size: 0.95em; padding: 0.28em 0.5em; margin: 0; }
+.cvResults { margin-top: 0.5em; }
+.cvTally { margin-top: 0.35em; font-size: 0.84em; color: #4f7a28; font-variant-numeric: tabular-nums; }
+.cvTally span { color: #778; }
+.cvNote { margin: 0.35em 0 0; font-size: 0.8em; min-height: 1em; }
 
 /* ---------- weekly raid (game) ---------- */
 .raidSection { padding: 0.4em 1em; }
@@ -276,16 +362,6 @@ body {
 }
 
 /* ---------- okra-game cross nav (home + game pages) ---------- */
-.gameNavSection { padding: 0.4em 1em; }
-.gameNavCard {
-  background: rgba(255,255,255,0.93);
-  border: 6px ridge #4f7a28; border-radius: 12px;
-  box-shadow: 0 0 0 4px #8bbf4d, 0 6px 18px rgba(0,0,0,0.45);
-  max-width: 34em; margin: 0 auto 1.2em; padding: 0.5em 1.6em 1.1em;
-  text-align: center; color: #2f4d18;
-}
-.gameNavCard h2 { margin: 0.3em 0 0.2em; font-size: 1.5em; }
-.gameNavIntro { margin: 0 0 0.6em; font-style: italic; color: #4f7a28; line-height: 1.3; }
 .gameNav { display: flex; flex-wrap: wrap; gap: 0.5em; justify-content: center; margin: 0.8em 0 0.2em; }
 .gameNavLink {
   font-family: inherit; font-weight: bold; text-decoration: none;
@@ -296,9 +372,17 @@ body {
 .gameNavLink:hover { background: #a6d96a; transform: scale(1.06); }
 .gameNavLink[aria-current="page"] { background: #2f4d18; color: #eaffd6; cursor: default; }
 .gameNote { font-size: 0.8em; color: #556; margin: 0.7em 0 0; min-height: 1em; }
-/* Game-page nav rendered once by the layout, as a consistent band just above the
-   site footer (see _layouts/default.html + _includes/game-nav.html). */
-.gameFooterNav { padding: 1.4em 1em 0.4em; text-align: center; }
+/* Game-page nav rendered once by the layout as a contained card near the top of the
+   page (see _layouts/default.html + _includes/game-nav.html) — matches the site's
+   panel look, so the pills sit in a themed card instead of floating on the okra. */
+.gameTopNav {
+  max-width: 48em; margin: 1.1em auto 0.2em; padding: 0.5em 1em;
+  background: rgba(255,255,255,0.93);
+  border: 4px ridge #4f7a28; border-radius: 12px;
+  box-shadow: 0 0 0 3px #8bbf4d, 0 4px 12px rgba(0,0,0,0.35);
+  text-align: center;
+}
+.gameTopNav .gameNav { margin: 0; }
 
 /* ---------- season leaderboard + past-raids archive (game) ---------- */
 .lbSection, .archiveSection { padding: 0.4em 1em; }
@@ -401,6 +485,12 @@ body {
   background: #e0b341; border: 2px solid #2f4d18; border-radius: 999px;
   padding: 0.05em 0.6em; text-transform: uppercase; letter-spacing: 0.03em;
 }
+.modTag {
+  font-size: 0.68em; font-weight: bold; color: #fff;
+  background: #7a4fb0; border: 2px solid #2f4d18; border-radius: 999px;
+  padding: 0.05em 0.6em; text-transform: uppercase; letter-spacing: 0.03em;
+}
+.cmdRow.cmdMod { background: #f3eefb; border-color: #b79bdd; }
 .htpAside { font-size: 0.82em; color: #556; font-style: italic; margin: 0.7em 0 0; }
 
 /* good-to-know + faq */
@@ -569,6 +659,18 @@ body {
 .socials a:hover { background: #a6d96a; transform: scale(1.06); }
 .footerSong { margin: 0.4em 0; }
 .footerSong a { font-size: 1.2em; color: #2f4d18; }
+.footerNav {
+  display: flex; flex-wrap: wrap; gap: 0.5em; justify-content: center; margin: 1em 0 0.2em;
+}
+.footerNav a {
+  font-family: inherit; font-weight: bold; text-decoration: none;
+  color: #2f4d18; background: transparent;
+  border: 2px solid #8bbf4d; border-radius: 999px;
+  padding: 0.28em 0.95em; font-size: 0.95em;
+  transition: transform 0.1s, background 0.15s, color 0.15s;
+}
+.footerNav a:hover { background: #8bbf4d; color: #1c2f0e; transform: scale(1.05); }
+@media (prefers-reduced-motion: reduce) { .footerNav a { transition: none; } }
 .footerMeta { font-size: 0.85em; color: #4f7a28; margin: 0.9em 0 0; }
 
 /* Clickable site banner (back to home) + prominent raid-game CTA button. */

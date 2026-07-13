@@ -6,23 +6,22 @@
       <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
     </h2>
     <p class="pollIntro">
-      📈 The galaxy&rsquo;s #1 okra-backed prediction market!<br/>
+      📈 The galaxy&rsquo;s #1 prediction market!<br/>
       <small>*not financial advice &middot; is okra advice &middot; positions settle at the heat death of the universe</small>
     </p>
-    <p class="pollQuestion">Will Nikki complete Resident Evil: Requiem?</p>
-    <div>
-      <button id="voteYes" class="pollBtn">YES</button>
-      <button id="voteNo"  class="pollBtn">NO</button>
-    </div>
-    <div id="pollResults" class="pollResults">Consulting the cosmos&hellip;</div>
-    <p id="pollNote" class="pollNote"></p>
+    <div id="marketGrid" class="marketGrid">Consulting the cosmos&hellip;</div>
+    <p id="marketNote" class="pollNote"></p>
   </div>
 </section>
 
-<!-- ===== OKRAMARKET poll logic — Firebase-backed shared vote storage ===== -->
+<!-- ===== OKRAMARKET — concurrent binary YES/NO prediction markets =====
+     Reads markets/open/<id> (Admin-written by kennyBot) and renders one card per
+     live market: the credit-staked parimutuel odds (read-only — viewers WAGER in
+     Twitch chat with !bet <#> <yes|no> <amount>) PLUS a free community YES/NO vote.
+     The community vote is anonymous and stakes NO credits; it writes to the open
+     polls/market-<id> path (a plain sentiment tally, separate from the credit
+     pools). Credits can't be minted client-side — the money side is read-only. -->
 <script type="module">
-  /* The apiKey here is NOT a secret — it is meant to live in public client
-   * code. Votes are protected by the Realtime Database security rules. */
   const firebaseConfig = {
     apiKey: "AIzaSyC3aWINWIBQ4rM_Ua2EOtr_Tw9rGhYdoS0",
     authDomain: "okrafans.firebaseapp.com",
@@ -33,96 +32,166 @@
     appId: "1:56095817168:web:6355809cae65797ca28dd5"
   };
 
-  const POLL_ID   = "requiem";
-  const VOTED_KEY = "okrafans_voted_" + POLL_ID;
-  const usingFirebase = !firebaseConfig.apiKey.startsWith("PASTE_");
+  const grid = document.getElementById("marketGrid");
+  const note = document.getElementById("marketNote");
+  const num  = (n) => (n || 0).toLocaleString("en-US");
+  const esc  = (s) => { const d = document.createElement("div"); d.textContent = (s == null ? "" : String(s)); return d.innerHTML; };
+  const STATUS = { open: "🟢 OPEN — place your bets!", closed: "🔒 BETTING CLOSED — awaiting the call" };
 
-  const yesBtn  = document.getElementById("voteYes");
-  const noBtn   = document.getElementById("voteNo");
-  const results = document.getElementById("pollResults");
-  const note    = document.getElementById("pollNote");
+  let dbMod = null;
+  let db = null;
+  const cards = new Map(); // market id -> card controller
 
-  function render(yes, no){
-    yes = yes || 0; no = no || 0;
+  function optionRows(m){
+    const keys  = m.optionOrder || ["yes", "no"];
+    const total = m.totalPool || keys.reduce((s, k) => s + ((m.pools && m.pools[k]) || 0), 0);
+    return keys.map((k) => {
+      const o    = (m.options && m.options[k]) || {};
+      const pool = (m.pools && m.pools[k]) || 0;
+      const pct  = total ? Math.round(pool / total * 100) : 0;
+      const mult = pool > 0 ? (total / pool) : 0; // parimutuel payout per credit if this side wins
+      return '<div class="mktOption mkt' + (k === "yes" ? "Yes" : "No") + '">' +
+          '<div class="mktOptTop">' +
+            '<span class="mktOptName">' + esc(o.label || k) + '</span>' +
+            '<span class="mktOptMult">' + (pool > 0 ? ('&times;' + mult.toFixed(2)) : '&mdash;') + '</span>' +
+          '</div>' +
+          '<div class="mktBar"><div class="mktBarFill" style="width:' + pct + '%"></div></div>' +
+          '<div class="mktOptFoot">' + num(pool) + ' credits &middot; ' + pct + '%</div>' +
+        '</div>';
+    }).join("");
+  }
+
+  function votedKey(c){ return "okramarket_voted_" + c.pollId; }
+
+  function renderVote(c, v){
+    const yes = (v && v.yes) || 0;
+    const no  = (v && v.no)  || 0;
     const total = yes + no;
-    const yPct = total ? Math.round((yes / total) * 100) : 0;
+    const yPct = total ? Math.round(yes / total * 100) : 0;
     const nPct = total ? 100 - yPct : 0;
-    results.innerHTML =
+    c.results.innerHTML =
       '<div class="pollBar">' +
-        '<div class="pollBarYes" style="width:' + yPct + '%">' + (yPct > 8 ? yPct + '%' : '') + '</div>' +
-        '<div class="pollBarNo"  style="width:' + nPct + '%">' + (nPct > 8 ? nPct + '%' : '') + '</div>' +
+        '<div class="pollBarYes" style="width:' + yPct + '%">' + (yPct > 12 ? yPct + '%' : '') + '</div>' +
+        '<div class="pollBarNo"  style="width:' + nPct + '%">' + (nPct > 12 ? nPct + '%' : '') + '</div>' +
       '</div>' +
-      '<div style="margin-top:0.45em;">' +
-        '✅ YES: ' + yes + ' &nbsp;&nbsp; ❌ NO: ' + no +
-        ' &nbsp;&nbsp; <span style="font-size:0.85em;">(' + total + ' okra-heads have spoken)</span>' +
+      '<div class="cvTally">✅ ' + yes + ' &nbsp; ❌ ' + no + ' &nbsp;<span>(' + total + ' votes)</span></div>';
+  }
+
+  function updateVoteButtons(c){
+    const voted = localStorage.getItem(votedKey(c));
+    const canVote = c.open && !voted;
+    c.yesBtn.disabled = !canVote;
+    c.noBtn.disabled  = !canVote;
+    if (voted)        c.voteNote.textContent = "You voted " + voted.toUpperCase() + " here. No take-backs. 🌱";
+    else if (!c.open) c.voteNote.textContent = "Voting closed on this one.";
+    else              c.voteNote.textContent = "";
+  }
+
+  async function castVote(c, choice){
+    if (!c.open) return;
+    const key = votedKey(c);
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, choice);
+    c.yesBtn.disabled = true; c.noBtn.disabled = true;
+    c.voteNote.textContent = "Thanks — you voted " + choice.toUpperCase() + "! 🌟";
+    try {
+      await dbMod.runTransaction(dbMod.ref(db, "polls/" + c.pollId + "/" + choice), (cur) => (cur || 0) + 1);
+    } catch (e) {
+      localStorage.removeItem(key);
+      c.voteNote.textContent = "Vote didn't take — try again in a moment.";
+      updateVoteButtons(c);
+    }
+  }
+
+  function buildCard(){
+    const el = document.createElement("div");
+    el.className = "mktCard";
+    el.innerHTML =
+      '<p class="mktQuestion"></p>' +
+      '<p class="mktStatus"></p>' +
+      '<div class="mktOptions"></div>' +
+      '<p class="mktMeta"></p>' +
+      '<p class="mktCta"></p>' +
+      '<div class="mktVote">' +
+        '<p class="cvTitle">🗳️ Community call <span class="cvFree">— free vote, no credits</span></p>' +
+        '<div class="cvBtns"><button class="pollBtn cvYes">YES</button><button class="pollBtn cvNo">NO</button></div>' +
+        '<div class="cvResults"></div>' +
+        '<p class="cvNote pollNote"></p>' +
       '</div>';
-  }
-
-  function lock(msg){
-    yesBtn.disabled = true;
-    noBtn.disabled  = true;
-    if (msg) note.textContent = msg;
-  }
-
-  const priorVote = localStorage.getItem(VOTED_KEY);
-  if (priorVote){
-    lock("You already voted " + priorVote.toUpperCase() + ". No take-backs in this universe. 🌱");
-  }
-
-  if (usingFirebase){
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
-    const { getDatabase, ref, runTransaction, onValue } =
-      await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
-
-    const db      = getDatabase(initializeApp(firebaseConfig));
-    const pollRef = ref(db, "polls/" + POLL_ID);
-
-    onValue(pollRef, (snap) => {
-      const v = snap.val() || {};
-      render(v.yes, v.no);
-    }, () => {
-      results.textContent = "The okra database is napping. Refresh to try again.";
-    });
-
-    async function vote(choice){
-      if (localStorage.getItem(VOTED_KEY)) return;
-      localStorage.setItem(VOTED_KEY, choice);
-      lock("Thanks for voting " + choice.toUpperCase() + "! 🌟");
-      try {
-        await runTransaction(ref(db, "polls/" + POLL_ID + "/" + choice),
-          (cur) => (cur || 0) + 1);
-      } catch (e) {
-        localStorage.removeItem(VOTED_KEY);
-        yesBtn.disabled = false; noBtn.disabled = false;
-        note.textContent = "The okra gods rejected that vote. Try again in a moment.";
-      }
-    }
-    yesBtn.addEventListener("click", () => vote("yes"));
-    noBtn.addEventListener("click",  () => vote("no"));
-
-  } else {
-    /* ---------- DEMO MODE (no Firebase config yet) ---------- */
-    if (!priorVote){
-      note.textContent = "demo mode — votes counted only in this browser until the Firebase config is added";
-    }
-    const LOCAL_KEY = "okrafans_localcount_" + POLL_ID;
-    const readLocal = () => {
-      try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || { yes: 0, no: 0 }; }
-      catch (e) { return { yes: 0, no: 0 }; }
+    const c = {
+      el,
+      q:        el.querySelector(".mktQuestion"),
+      status:   el.querySelector(".mktStatus"),
+      options:  el.querySelector(".mktOptions"),
+      meta:     el.querySelector(".mktMeta"),
+      cta:      el.querySelector(".mktCta"),
+      yesBtn:   el.querySelector(".cvYes"),
+      noBtn:    el.querySelector(".cvNo"),
+      results:  el.querySelector(".cvResults"),
+      voteNote: el.querySelector(".cvNote"),
+      pollId:   null,
+      unsubPoll: null,
+      open:     false,
     };
-    let counts = readLocal();
-    render(counts.yes, counts.no);
+    c.yesBtn.addEventListener("click", () => castVote(c, "yes"));
+    c.noBtn.addEventListener("click",  () => castVote(c, "no"));
+    return c;
+  }
 
-    function vote(choice){
-      if (localStorage.getItem(VOTED_KEY)) return;
-      counts = readLocal();
-      counts[choice] = (counts[choice] || 0) + 1;
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(counts));
-      localStorage.setItem(VOTED_KEY, choice);
-      render(counts.yes, counts.no);
-      lock("Thanks for voting " + choice.toUpperCase() + "! 🌟 (demo mode)");
+  function updateCard(c, m){
+    c.q.textContent = m.question || "";
+    c.status.textContent = STATUS[m.status] || m.status;
+    c.status.className = "mktStatus mkt-" + m.status;
+    c.options.innerHTML = optionRows(m);
+    c.meta.innerHTML = '💰 pool ' + num(m.totalPool) + ' credits &middot; ' + num(m.betCount) + ' bettors';
+    c.open = m.status === "open";
+    c.cta.innerHTML = m.status === "open"
+      ? 'Wager in <a href="https://www.twitch.tv/nikkibreanne" target="_blank" rel="noopener noreferrer">chat</a>: <code>!bet ' + esc(m.id) + ' &lt;yes|no&gt; &lt;amount&gt;</code>'
+      : 'Betting closed — awaiting the mod&rsquo;s call.';
+
+    const pollId = "market-" + m.id;
+    if (c.pollId !== pollId) {
+      c.pollId = pollId;
+      if (c.unsubPoll) { c.unsubPoll(); c.unsubPoll = null; }
+      c.unsubPoll = dbMod.onValue(dbMod.ref(db, "polls/" + pollId), (snap) => renderVote(c, snap.val()));
     }
-    yesBtn.addEventListener("click", () => vote("yes"));
-    noBtn.addEventListener("click",  () => vote("no"));
+    updateVoteButtons(c);
+  }
+
+  function teardown(c){ if (c.unsubPoll) c.unsubPoll(); c.el.remove(); }
+
+  function renderEmpty(){
+    for (const [, c] of cards) { if (c.unsubPoll) c.unsubPoll(); }
+    cards.clear();
+    grid.innerHTML = '<p class="raidEmpty">🌌 No markets live right now — a fresh line drops when Nikki (or chat) calls one. Suggest yours in chat: <code>!market suggest &lt;yes/no question&gt;</code></p>';
+  }
+
+  function onMarkets(val){
+    note.textContent = "";
+    const markets = Object.values(val || {}).filter(Boolean).sort((a, b) => a.id - b.id);
+    if (!markets.length) { renderEmpty(); return; }
+    if (!cards.size) grid.innerHTML = ""; // clear the loading/empty placeholder
+
+    const seen = new Set();
+    for (const m of markets) {
+      seen.add(m.id);
+      let c = cards.get(m.id);
+      if (!c) { c = buildCard(); cards.set(m.id, c); grid.appendChild(c.el); }
+      updateCard(c, m);
+    }
+    for (const [id, c] of cards) { if (!seen.has(id)) { teardown(c); cards.delete(id); } }
+  }
+
+  try {
+    const appMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    dbMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+    db = dbMod.getDatabase(appMod.initializeApp(firebaseConfig));
+    if (new URLSearchParams(location.search).has("dev")) {
+      try { dbMod.connectDatabaseEmulator(db, "127.0.0.1", 9000); } catch (e) {}
+    }
+    dbMod.onValue(dbMod.ref(db, "markets/open"), (snap) => onMarkets(snap.val()),
+      () => { grid.innerHTML = '<p class="raidEmpty">The market is napping. Refresh to try again.</p>'; });
+  } catch (e) {
+    grid.innerHTML = '<p class="raidEmpty">The market is offline right now.</p>';
   }
 </script>

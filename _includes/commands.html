@@ -1,0 +1,44 @@
+{%- comment -%}
+  Full kennyBot command reference. Data lives in _data/commands.yml (kept in sync
+  with the bot's registry); the chat command !kennycommands links here.
+{%- endcomment -%}
+<section class="htpSection">
+  <div class="htpPanel">
+    <h2>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+      <span>KENNYBOT COMMANDS</span>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+    </h2>
+    <p class="htpIntro">
+      Everything kennyBot understands — type these in Nikki&rsquo;s Twitch chat.<br/>
+      <small><span class="subTag">subs</span> = subscriber-only &middot; <span class="modTag">mod</span> = moderators only</small>
+    </p>
+  </div>
+
+  {% for grp in site.data.commands %}
+  <div class="htpPanel">
+    <h3>{{ grp.group }}</h3>
+    {% if grp.blurb %}<p class="htpIntro">{{ grp.blurb }}</p>{% endif %}
+    <ul class="cmdList">
+      {% for c in grp.commands %}
+      <li class="cmdRow{% if c.sub %} cmdSub{% endif %}{% if grp.mod %} cmdMod{% endif %}">
+        <div class="cmdSyntax">
+          <code>{{ c.cmd }}{% if c.args %} {{ c.args | escape }}{% endif %}</code>
+          {% if c.sub %}<span class="subTag">subs</span>{% endif %}
+          {% if c.sub_note %}<span class="subTag">{{ c.sub_note }}</span>{% endif %}
+          {% if grp.mod %}<span class="modTag">mod</span>{% endif %}
+          {% if c.aliases %}<span class="cmdAlias">also: {{ c.aliases }}</span>{% endif %}
+        </div>
+        <div class="cmdDesc">{{ c.desc }}</div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endfor %}
+
+  <div class="htpPanel">
+    <p class="htpAside">
+      New to the raid game? The <a href="{{ '/how-to-play/' | relative_url }}">How to Play</a> page walks through the weekly loop.
+    </p>
+  </div>
+</section>

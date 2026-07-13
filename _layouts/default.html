@@ -26,13 +26,13 @@
     <div class="wiggleOkra"><img class="okraSpin" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt="okra"/></div>
   </header>
 
+  {% if page.game %}
+  <div class="gameTopNav">{% include game-nav.html current=page.game %}</div>
+  {% endif %}
+
   <main>
     {{ content }}
   </main>
-
-  {% if page.game %}
-  <div class="gameFooterNav">{% include game-nav.html current=page.game %}</div>
-  {% endif %}
 
   <footer class="okraFooter">
     <div class="footerInner">
@@ -45,6 +45,13 @@
         <a href="https://www.imdb.com/name/nm3363412/" target="_blank" rel="noopener noreferrer">🎬 IMDb</a>
       </nav>
       <p class="footerSong"><a href="https://www.youtube.com/watch?v=1vrEljMfXYo" target="_blank" rel="noopener noreferrer">🎵 Nikki&rsquo;s Favorite Song</a></p>
+      <nav class="footerNav" aria-label="Site pages">
+        <a href="{{ '/' | relative_url }}">🏠 Home</a>
+        <a href="{{ '/raid/' | relative_url }}">🗡️ Raid Game</a>
+        <a href="{{ '/okramarket/' | relative_url }}">📈 OKRAMARKET</a>
+        <a href="{{ '/info/' | relative_url }}">🌟 Nikki Fun Facts</a>
+        <a href="{{ '/commands/' | relative_url }}">🤖 Commands</a>
+      </nav>
     </div>
   </footer>
 </body>
