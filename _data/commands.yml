@@ -59,7 +59,7 @@
   commands:
     - cmd: "!fact"
       aliases: "!facts"
-      desc: "A random Nikki fact. <code>!fact suggest &lt;text&gt;</code> proposes one for approval — approved facts appear on the <a href='/info/'>facts page</a>."
+      desc: "A random Nikki fun fact. <code>!fact suggest &lt;text&gt;</code> proposes one for approval — approved facts appear on the <a href='/info/'>fun facts page</a>."
     - cmd: "!kennycommands"
       aliases: "!kennybot"
       desc: "This list."
