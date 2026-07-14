@@ -54,6 +54,9 @@
     - cmd: "!market suggest"
       args: "<question>"
       desc: "Propose a YES/NO market — e.g. <code>!market suggest Will we clear the boss tonight?</code>. A mod reviews it before it goes live."
+    - cmd: "!duel"
+      args: "<@user> <amount>"
+      desc: "Challenge another viewer to a coin-flip duel for credits. They reply <code>!duel accept</code> or <code>!duel deny</code>; on accept both stake the wager and the winner takes the whole pot. Expires in 3 minutes."
 
 - group: "Facts & meta"
   commands:
