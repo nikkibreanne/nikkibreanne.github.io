@@ -1,0 +1,866 @@
+[
+  {
+    "id": "itm_starter_tank_weapon_01",
+    "name": "Dented Garden Hoe",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "tank",
+    "bonuses": {
+      "tank": 10
+    },
+    "set": "Starter",
+    "order": 0
+  },
+  {
+    "id": "itm_starter_tank_weapon_02",
+    "name": "Cast-Iron Skillet",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "tank",
+    "bonuses": {
+      "tank": 10
+    },
+    "set": "Starter",
+    "order": 1
+  },
+  {
+    "id": "itm_starter_tank_weapon_03",
+    "name": "Sturdy Trellis Post",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "tank",
+    "bonuses": {
+      "tank": 9
+    },
+    "set": "Starter",
+    "order": 2
+  },
+  {
+    "id": "itm_starter_tank_weapon_04",
+    "name": "Knotted Okra Stalk",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "tank",
+    "bonuses": {
+      "tank": 11
+    },
+    "set": "Starter",
+    "order": 3
+  },
+  {
+    "id": "itm_starter_tank_armor_01",
+    "name": "Patched Gardening Apron",
+    "slot": "armor",
+    "rarity": "common",
+    "role": "tank",
+    "bonuses": {
+      "tank": 8
+    },
+    "set": "Starter",
+    "order": 4
+  },
+  {
+    "id": "itm_starter_tank_armor_02",
+    "name": "Quilted Compost Vest",
+    "slot": "armor",
+    "rarity": "common",
+    "role": "tank",
+    "bonuses": {
+      "tank": 8
+    },
+    "set": "Starter",
+    "order": 5
+  },
+  {
+    "id": "itm_starter_tank_armor_03",
+    "name": "Bark-Bound Brigandine",
+    "slot": "armor",
+    "rarity": "common",
+    "role": "tank",
+    "bonuses": {
+      "tank": 9
+    },
+    "set": "Starter",
+    "order": 6
+  },
+  {
+    "id": "itm_starter_tank_armor_04",
+    "name": "Mud-Caked Coveralls",
+    "slot": "armor",
+    "rarity": "common",
+    "role": "tank",
+    "bonuses": {
+      "tank": 7
+    },
+    "set": "Starter",
+    "order": 7
+  },
+  {
+    "id": "itm_starter_heal_weapon_01",
+    "name": "Cracked Watering Can",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "healer",
+    "bonuses": {
+      "healer": 10
+    },
+    "set": "Starter",
+    "order": 8
+  },
+  {
+    "id": "itm_starter_heal_weapon_02",
+    "name": "Wilted Sprig Wand",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "healer",
+    "bonuses": {
+      "healer": 10
+    },
+    "set": "Starter",
+    "order": 9
+  },
+  {
+    "id": "itm_starter_heal_weapon_03",
+    "name": "Chipped Seed Censer",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "healer",
+    "bonuses": {
+      "healer": 9
+    },
+    "set": "Starter",
+    "order": 10
+  },
+  {
+    "id": "itm_starter_heal_weapon_04",
+    "name": "Dewdrop Dowsing Rod",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "healer",
+    "bonuses": {
+      "healer": 11
+    },
+    "set": "Starter",
+    "order": 11
+  },
+  {
+    "id": "itm_starter_heal_armor_01",
+    "name": "Frayed Herbalist Robes",
+    "slot": "armor",
+    "rarity": "common",
+    "role": "healer",
+    "bonuses": {
+      "healer": 8
+    },
+    "set": "Starter",
+    "order": 12
+  },
+  {
+    "id": "itm_starter_heal_armor_02",
+    "name": "Pollen-Dusted Shawl",
+    "slot": "armor",
+    "rarity": "common",
+    "role": "healer",
+    "bonuses": {
+      "healer": 8
+    },
+    "set": "Starter",
+    "order": 13
+  },
+  {
+    "id": "itm_starter_heal_armor_03",
+    "name": "Woven Reed Mantle",
+    "slot": "armor",
+    "rarity": "common",
+    "role": "healer",
+    "bonuses": {
+      "healer": 9
+    },
+    "set": "Starter",
+    "order": 14
+  },
+  {
+    "id": "itm_starter_heal_armor_04",
+    "name": "Faded Greenhouse Smock",
+    "slot": "armor",
+    "rarity": "common",
+    "role": "healer",
+    "bonuses": {
+      "healer": 7
+    },
+    "set": "Starter",
+    "order": 15
+  },
+  {
+    "id": "itm_starter_dps_weapon_01",
+    "name": "Worn Pruning Shears",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "dps",
+    "bonuses": {
+      "dps": 12
+    },
+    "set": "Starter",
+    "order": 16
+  },
+  {
+    "id": "itm_starter_dps_weapon_02",
+    "name": "Rusty Machete",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "dps",
+    "bonuses": {
+      "dps": 12
+    },
+    "set": "Starter",
+    "order": 17
+  },
+  {
+    "id": "itm_starter_dps_weapon_03",
+    "name": "Splintered Pitchfork",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "dps",
+    "bonuses": {
+      "dps": 11
+    },
+    "set": "Starter",
+    "order": 18
+  },
+  {
+    "id": "itm_starter_dps_weapon_04",
+    "name": "Twangy Garden Slingbow",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "dps",
+    "bonuses": {
+      "dps": 12
+    },
+    "set": "Starter",
+    "order": 19
+  },
+  {
+    "id": "itm_starter_dps_armor_01",
+    "name": "Threadbare Field Leathers",
+    "slot": "armor",
+    "rarity": "common",
+    "role": "dps",
+    "bonuses": {
+      "dps": 7
+    },
+    "set": "Starter",
+    "order": 20
+  },
+  {
+    "id": "itm_starter_dps_armor_02",
+    "name": "Scuffed Scout Jerkin",
+    "slot": "armor",
+    "rarity": "common",
+    "role": "dps",
+    "bonuses": {
+      "dps": 7
+    },
+    "set": "Starter",
+    "order": 21
+  },
+  {
+    "id": "itm_starter_dps_armor_03",
+    "name": "Sun-Bleached Huntsuit",
+    "slot": "armor",
+    "rarity": "common",
+    "role": "dps",
+    "bonuses": {
+      "dps": 8
+    },
+    "set": "Starter",
+    "order": 22
+  },
+  {
+    "id": "itm_starter_dps_armor_04",
+    "name": "Burlap Skirmish Wrap",
+    "slot": "armor",
+    "rarity": "common",
+    "role": "dps",
+    "bonuses": {
+      "dps": 6
+    },
+    "set": "Starter",
+    "order": 23
+  },
+  {
+    "id": "itm_s1_cinder_spade",
+    "name": "Cinder-Forged Spade",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "tank",
+    "bonuses": {
+      "tank": 10
+    },
+    "set": "Season 1",
+    "order": 24
+  },
+  {
+    "id": "itm_s1_mire_poultice",
+    "name": "Mireheart Poultice",
+    "slot": "trinket",
+    "rarity": "common",
+    "role": "healer",
+    "bonuses": {
+      "healer": 9
+    },
+    "set": "Season 1",
+    "order": 25
+  },
+  {
+    "id": "itm_s1_thornnettle_dirk",
+    "name": "Thornnettle Dirk",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "dps",
+    "bonuses": {
+      "dps": 12
+    },
+    "set": "Season 1",
+    "order": 26
+  },
+  {
+    "id": "itm_s1_stoneheart_charm",
+    "name": "Stoneheart Charm",
+    "slot": "trinket",
+    "rarity": "uncommon",
+    "role": "tank",
+    "bonuses": {
+      "tank": 18
+    },
+    "set": "Season 1",
+    "order": 27
+  },
+  {
+    "id": "itm_s1_pollenward_mantle",
+    "name": "Pollenward Mantle",
+    "slot": "armor",
+    "rarity": "uncommon",
+    "role": "healer",
+    "bonuses": {
+      "healer": 19
+    },
+    "set": "Season 1",
+    "order": 28
+  },
+  {
+    "id": "itm_s1_ember_token",
+    "name": "Ember Token",
+    "slot": "trinket",
+    "rarity": "uncommon",
+    "role": "dps",
+    "bonuses": {
+      "dps": 21
+    },
+    "set": "Season 1",
+    "order": 29
+  },
+  {
+    "id": "itm_s1_ashbark_aegis",
+    "name": "Ashbark Aegis",
+    "slot": "armor",
+    "rarity": "rare",
+    "role": "tank",
+    "bonuses": {
+      "tank": 36
+    },
+    "set": "Season 1",
+    "order": 30
+  },
+  {
+    "id": "itm_s1_dewmender_scepter",
+    "name": "Dewmender Scepter",
+    "slot": "weapon",
+    "rarity": "rare",
+    "role": "healer",
+    "bonuses": {
+      "healer": 35
+    },
+    "set": "Season 1",
+    "order": 31
+  },
+  {
+    "id": "itm_s1_stormcaller_edge",
+    "name": "Stormcaller Edge",
+    "slot": "weapon",
+    "rarity": "rare",
+    "role": "dps",
+    "bonuses": {
+      "dps": 39
+    },
+    "set": "Season 1",
+    "order": 32
+  },
+  {
+    "id": "itm_s1_blightstalker_hide",
+    "name": "Blightstalker Hide",
+    "slot": "armor",
+    "rarity": "rare",
+    "role": "dps",
+    "bonuses": {
+      "dps": 38
+    },
+    "set": "Season 1",
+    "order": 33
+  },
+  {
+    "id": "itm_s1_wardens_bastion",
+    "name": "Warden's Bastion",
+    "slot": "armor",
+    "rarity": "epic",
+    "role": "tank",
+    "bonuses": {
+      "tank": 58
+    },
+    "set": "Season 1",
+    "order": 34
+  },
+  {
+    "id": "itm_s1_choirs_lament",
+    "name": "Choir's Lament",
+    "slot": "weapon",
+    "rarity": "epic",
+    "role": "healer",
+    "bonuses": {
+      "healer": 60
+    },
+    "set": "Season 1",
+    "order": 35
+  },
+  {
+    "id": "itm_s1_emberforged_blade",
+    "name": "Emberforged Blade",
+    "slot": "weapon",
+    "rarity": "epic",
+    "role": "dps",
+    "bonuses": {
+      "dps": 64
+    },
+    "set": "Season 1",
+    "order": 36
+  },
+  {
+    "id": "itm_s1_tyrants_emberseed",
+    "name": "Tyrant's Emberseed",
+    "slot": "trinket",
+    "rarity": "epic",
+    "role": "dps",
+    "bonuses": {
+      "dps": 62
+    },
+    "set": "Season 1",
+    "order": 37
+  },
+  {
+    "id": "itm_s1_final_knell_reaper",
+    "name": "Reaper of the Final Knell",
+    "slot": "weapon",
+    "rarity": "legendary",
+    "role": "dps",
+    "bonuses": {
+      "dps": 104
+    },
+    "set": "Season 1",
+    "order": 38
+  },
+  {
+    "id": "itm_s1_heart_of_the_grove",
+    "name": "Heart of the Grove",
+    "slot": "trinket",
+    "rarity": "legendary",
+    "role": "healer",
+    "bonuses": {
+      "healer": 96
+    },
+    "set": "Season 1",
+    "order": 39
+  },
+  {
+    "id": "itm_s2_brineforged_maul",
+    "name": "Brineforged Maul",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "tank",
+    "bonuses": {
+      "tank": 13
+    },
+    "set": "Season 2",
+    "order": 40
+  },
+  {
+    "id": "itm_s2_tidewater_locket",
+    "name": "Tidewater Locket",
+    "slot": "trinket",
+    "rarity": "common",
+    "role": "healer",
+    "bonuses": {
+      "healer": 12
+    },
+    "set": "Season 2",
+    "order": 41
+  },
+  {
+    "id": "itm_s2_frostbite_sickle",
+    "name": "Frostbite Sickle",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "dps",
+    "bonuses": {
+      "dps": 15
+    },
+    "set": "Season 2",
+    "order": 42
+  },
+  {
+    "id": "itm_s2_glacial_anchor",
+    "name": "Glacial Anchor",
+    "slot": "trinket",
+    "rarity": "uncommon",
+    "role": "tank",
+    "bonuses": {
+      "tank": 23
+    },
+    "set": "Season 2",
+    "order": 43
+  },
+  {
+    "id": "itm_s2_seafoam_vestment",
+    "name": "Seafoam Vestment",
+    "slot": "armor",
+    "rarity": "uncommon",
+    "role": "healer",
+    "bonuses": {
+      "healer": 24
+    },
+    "set": "Season 2",
+    "order": 44
+  },
+  {
+    "id": "itm_s2_stormspark_idol",
+    "name": "Stormspark Idol",
+    "slot": "trinket",
+    "rarity": "uncommon",
+    "role": "dps",
+    "bonuses": {
+      "dps": 26
+    },
+    "set": "Season 2",
+    "order": 45
+  },
+  {
+    "id": "itm_s2_glassreef_carapace",
+    "name": "Glassreef Carapace",
+    "slot": "armor",
+    "rarity": "rare",
+    "role": "tank",
+    "bonuses": {
+      "tank": 45
+    },
+    "set": "Season 2",
+    "order": 46
+  },
+  {
+    "id": "itm_s2_coralbloom_wand",
+    "name": "Coralbloom Wand",
+    "slot": "weapon",
+    "rarity": "rare",
+    "role": "healer",
+    "bonuses": {
+      "healer": 44
+    },
+    "set": "Season 2",
+    "order": 47
+  },
+  {
+    "id": "itm_s2_squallpiercer_bow",
+    "name": "Squallpiercer Bow",
+    "slot": "weapon",
+    "rarity": "rare",
+    "role": "dps",
+    "bonuses": {
+      "dps": 49
+    },
+    "set": "Season 2",
+    "order": 48
+  },
+  {
+    "id": "itm_s2_riptide_leathers",
+    "name": "Riptide Leathers",
+    "slot": "armor",
+    "rarity": "rare",
+    "role": "dps",
+    "bonuses": {
+      "dps": 48
+    },
+    "set": "Season 2",
+    "order": 49
+  },
+  {
+    "id": "itm_s2_bulwark_of_the_deep",
+    "name": "Bulwark of the Deep",
+    "slot": "armor",
+    "rarity": "epic",
+    "role": "tank",
+    "bonuses": {
+      "tank": 73
+    },
+    "set": "Season 2",
+    "order": 50
+  },
+  {
+    "id": "itm_s2_verdigris_crook",
+    "name": "Verdigris Crook",
+    "slot": "weapon",
+    "rarity": "epic",
+    "role": "healer",
+    "bonuses": {
+      "healer": 75
+    },
+    "set": "Season 2",
+    "order": 51
+  },
+  {
+    "id": "itm_s2_thunderglass_saber",
+    "name": "Thunderglass Saber",
+    "slot": "weapon",
+    "rarity": "epic",
+    "role": "dps",
+    "bonuses": {
+      "dps": 80
+    },
+    "set": "Season 2",
+    "order": 52
+  },
+  {
+    "id": "itm_s2_maelstrom_seed",
+    "name": "Maelstrom Seed",
+    "slot": "trinket",
+    "rarity": "epic",
+    "role": "dps",
+    "bonuses": {
+      "dps": 78
+    },
+    "set": "Season 2",
+    "order": 53
+  },
+  {
+    "id": "itm_s2_aegis_of_the_drowned_court",
+    "name": "Aegis of the Drowned Court",
+    "slot": "armor",
+    "rarity": "legendary",
+    "role": "tank",
+    "bonuses": {
+      "tank": 120
+    },
+    "set": "Season 2",
+    "order": 54
+  },
+  {
+    "id": "itm_s2_leviathans_edge",
+    "name": "Leviathan's Edge",
+    "slot": "weapon",
+    "rarity": "legendary",
+    "role": "dps",
+    "bonuses": {
+      "dps": 128
+    },
+    "set": "Season 2",
+    "order": 55
+  },
+  {
+    "id": "itm_s3_gilded_warscythe",
+    "name": "Gilded Warscythe",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "tank",
+    "bonuses": {
+      "tank": 15
+    },
+    "set": "Season 3",
+    "order": 56
+  },
+  {
+    "id": "itm_s3_sunpetal_phylactery",
+    "name": "Sunpetal Phylactery",
+    "slot": "trinket",
+    "rarity": "common",
+    "role": "healer",
+    "bonuses": {
+      "healer": 14
+    },
+    "set": "Season 3",
+    "order": 57
+  },
+  {
+    "id": "itm_s3_starthistle_kris",
+    "name": "Starthistle Kris",
+    "slot": "weapon",
+    "rarity": "common",
+    "role": "dps",
+    "bonuses": {
+      "dps": 17
+    },
+    "set": "Season 3",
+    "order": 58
+  },
+  {
+    "id": "itm_s3_astral_ballast",
+    "name": "Astral Ballast",
+    "slot": "trinket",
+    "rarity": "uncommon",
+    "role": "tank",
+    "bonuses": {
+      "tank": 28
+    },
+    "set": "Season 3",
+    "order": 59
+  },
+  {
+    "id": "itm_s3_moonbloom_raiment",
+    "name": "Moonbloom Raiment",
+    "slot": "armor",
+    "rarity": "uncommon",
+    "role": "healer",
+    "bonuses": {
+      "healer": 29
+    },
+    "set": "Season 3",
+    "order": 60
+  },
+  {
+    "id": "itm_s3_cometfall_idol",
+    "name": "Cometfall Idol",
+    "slot": "trinket",
+    "rarity": "uncommon",
+    "role": "dps",
+    "bonuses": {
+      "dps": 31
+    },
+    "set": "Season 3",
+    "order": 61
+  },
+  {
+    "id": "itm_s3_aurora_bulwark",
+    "name": "Aurora Bulwark",
+    "slot": "armor",
+    "rarity": "rare",
+    "role": "tank",
+    "bonuses": {
+      "tank": 54
+    },
+    "set": "Season 3",
+    "order": 62
+  },
+  {
+    "id": "itm_s3_starlit_crook",
+    "name": "Starlit Crook",
+    "slot": "weapon",
+    "rarity": "rare",
+    "role": "healer",
+    "bonuses": {
+      "healer": 53
+    },
+    "set": "Season 3",
+    "order": 63
+  },
+  {
+    "id": "itm_s3_voidthorn_glaive",
+    "name": "Voidthorn Glaive",
+    "slot": "weapon",
+    "rarity": "rare",
+    "role": "dps",
+    "bonuses": {
+      "dps": 58
+    },
+    "set": "Season 3",
+    "order": 64
+  },
+  {
+    "id": "itm_s3_nightharvest_garb",
+    "name": "Nightharvest Garb",
+    "slot": "armor",
+    "rarity": "rare",
+    "role": "dps",
+    "bonuses": {
+      "dps": 57
+    },
+    "set": "Season 3",
+    "order": 65
+  },
+  {
+    "id": "itm_s3_colossus_of_dawn",
+    "name": "Colossus-Plate of Dawn",
+    "slot": "armor",
+    "rarity": "epic",
+    "role": "tank",
+    "bonuses": {
+      "tank": 88
+    },
+    "set": "Season 3",
+    "order": 66
+  },
+  {
+    "id": "itm_s3_everbloom_scepter",
+    "name": "Everbloom Scepter",
+    "slot": "weapon",
+    "rarity": "epic",
+    "role": "healer",
+    "bonuses": {
+      "healer": 90
+    },
+    "set": "Season 3",
+    "order": 67
+  },
+  {
+    "id": "itm_s3_eclipse_edge",
+    "name": "Eclipse Edge",
+    "slot": "weapon",
+    "rarity": "epic",
+    "role": "dps",
+    "bonuses": {
+      "dps": 96
+    },
+    "set": "Season 3",
+    "order": 68
+  },
+  {
+    "id": "itm_s3_seed_of_the_eternal",
+    "name": "Seed of the Eternal",
+    "slot": "trinket",
+    "rarity": "epic",
+    "role": "dps",
+    "bonuses": {
+      "dps": 93
+    },
+    "set": "Season 3",
+    "order": 69
+  },
+  {
+    "id": "itm_s3_lifebloom_of_the_first_dawn",
+    "name": "Lifebloom of the First Dawn",
+    "slot": "weapon",
+    "rarity": "legendary",
+    "role": "healer",
+    "bonuses": {
+      "healer": 144
+    },
+    "set": "Season 3",
+    "order": 70
+  },
+  {
+    "id": "itm_s3_heart_of_the_worldokra",
+    "name": "Heart of the World-Okra",
+    "slot": "trinket",
+    "rarity": "legendary",
+    "role": "tank",
+    "bonuses": {
+      "tank": 150
+    },
+    "set": "Season 3",
+    "order": 71
+  }
+]
