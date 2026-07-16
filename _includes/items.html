@@ -1,0 +1,323 @@
+<section class="infoSection">
+  <div class="infoPanel" id="compendium">
+    <h2>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+      <span>ITEM COMPENDIUM</span>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+    </h2>
+    <p class="cmpIntro">
+      🎒 Every piece of gear in the okra-patch raid game &mdash; filter, sort, and
+      pin items to <strong>compare their stats side by side</strong>.
+      <small>Each item boosts <em>one</em> role&rsquo;s rating; win it as loot with <code>!loot</code> on a drop, then <code>!equip</code> it.</small>
+    </p>
+
+    <!-- Pinned compare tray (up to 4). Hidden until you pin something. -->
+    <div id="cmpTray" class="cmpTray" hidden>
+      <div class="cmpTrayHead">
+        <span>⚖️ Comparing</span>
+        <button id="cmpClear" class="pollBtn cmpClearBtn" type="button">Clear</button>
+      </div>
+      <div id="cmpTrayCards" class="cmpTrayCards"></div>
+    </div>
+
+    <!-- Filter + sort controls -->
+    <div class="cmpControls">
+      <input id="cmpSearch" class="cmpSearch" type="search" placeholder="🔍 Search by name…" aria-label="Search items by name"/>
+      <label class="cmpField"><span>Role</span>
+        <select id="cmpRole">
+          <option value="all">All roles</option>
+          <option value="tank">🛡️ Tank</option>
+          <option value="healer">💚 Healer</option>
+          <option value="dps">⚔️ DPS</option>
+        </select>
+      </label>
+      <label class="cmpField"><span>Slot</span>
+        <select id="cmpSlot">
+          <option value="all">All slots</option>
+          <option value="weapon">Weapon</option>
+          <option value="armor">Armor</option>
+          <option value="trinket">Trinket</option>
+        </select>
+      </label>
+      <label class="cmpField"><span>Rarity</span>
+        <select id="cmpRarity">
+          <option value="all">All rarities</option>
+          <option value="common">Common</option>
+          <option value="uncommon">Uncommon</option>
+          <option value="rare">Rare</option>
+          <option value="epic">Epic</option>
+          <option value="legendary">Legendary</option>
+        </select>
+      </label>
+      <label class="cmpField"><span>Set</span>
+        <select id="cmpSet">
+          <option value="all">All sets</option>
+          <option value="Starter">Starter</option>
+          <option value="Season 1">Season 1</option>
+          <option value="Season 2">Season 2</option>
+          <option value="Season 3">Season 3</option>
+        </select>
+      </label>
+      <label class="cmpField"><span>Sort</span>
+        <select id="cmpSort">
+          <option value="set">Set order</option>
+          <option value="bonus">Stat (high→low)</option>
+          <option value="rarity">Rarity (high→low)</option>
+          <option value="name">Name (A→Z)</option>
+        </select>
+      </label>
+    </div>
+
+    <p id="cmpCount" class="cmpCount"></p>
+    <div class="cmpTableWrap">
+      <table class="cmpTable">
+        <thead>
+          <tr>
+            <th class="cmpPinCol" aria-label="Pin to compare"></th>
+            <th>Item</th>
+            <th>Set</th>
+            <th>Slot</th>
+            <th>Rarity</th>
+            <th>Role</th>
+            <th class="cmpStatCol">Stat</th>
+          </tr>
+        </thead>
+        <tbody id="cmpBody"><tr><td colspan="7" class="cmpEmpty">Loading the loot table&hellip;</td></tr></tbody>
+      </table>
+    </div>
+    <p id="cmpNote" class="gameNote"></p>
+  </div>
+</section>
+
+<!-- Build-time FALLBACK: the item catalog exported from kennyBot's
+     src/content/items.js (regenerate with `node scripts/export-catalog.mjs`).
+     Rendered instantly so the page is never blank; the live Firebase `items/`
+     seed (seedCatalog on boot) replaces it when present. -->
+<script id="itemsFallback" type="application/json">{{ site.data.items | jsonify }}</script>
+
+<style>
+  /* This is a data table, not prose — give it more room than the default 40em
+     prose panel so all 7 columns fit on desktop (mobile still scrolls). */
+  #compendium.infoPanel { max-width: 52em; padding-left: 1em; padding-right: 1em; }
+  .cmpIntro { text-align: center; margin: 0 0 1em; line-height: 1.5; }
+  .cmpIntro small { display: block; margin-top: 0.4em; color: #556; }
+
+  .cmpControls { display: flex; flex-wrap: wrap; gap: 0.6em; align-items: flex-end; justify-content: center; margin: 0 0 0.8em; }
+  .cmpField { display: flex; flex-direction: column; font-size: 0.72em; font-weight: 700; color: #4a5a2e; text-transform: uppercase; letter-spacing: 0.03em; }
+  .cmpField span { margin: 0 0 0.15em 0.2em; }
+  .cmpControls select, .cmpSearch {
+    font-family: inherit; font-size: 0.95rem; padding: 0.4em 0.6em;
+    border: 2px solid #b6d98a; border-radius: 0.6em; background: #fff; color: #333;
+  }
+  .cmpSearch { min-width: 12em; flex: 1 1 12em; max-width: 20em; }
+  .cmpControls select:focus, .cmpSearch:focus { outline: none; border-color: #6fae34; }
+
+  .cmpCount { text-align: center; font-size: 0.82em; color: #556; margin: 0 0 0.5em; }
+
+  .cmpTableWrap { overflow-x: auto; max-width: 100%; border-radius: 0.6em; }
+  .cmpTable { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+  .cmpTable thead th {
+    position: sticky; top: 0; background: #6fae34; color: #fff; text-align: left;
+    padding: 0.5em 0.5em; font-size: 0.74em; text-transform: uppercase; letter-spacing: 0.02em; white-space: nowrap;
+  }
+  .cmpTable tbody td { padding: 0.45em 0.5em; border-bottom: 1px solid #e6efd6; white-space: nowrap; }
+  .cmpTable tbody tr:nth-child(even) { background: #f6fbee; }
+  .cmpTable tbody tr:hover { background: #eef7dd; }
+  .cmpName { font-weight: 700; white-space: normal; }
+  .cmpStatCol, .cmpStat { text-align: right; font-variant-numeric: tabular-nums; }
+  .cmpStat { font-weight: 700; }
+  .cmpEmpty { text-align: center; color: #778; padding: 1.4em; font-style: italic; }
+
+  /* Pin button */
+  .cmpPinCol { width: 1.8em; }
+  .cmpPin { background: none; border: none; cursor: pointer; font-size: 1.1rem; line-height: 1; padding: 0.1em; color: #c9c9a0; transition: transform 0.1s; }
+  .cmpPin:hover { transform: scale(1.25); }
+  .cmpPin.isPinned { color: #e6a817; }
+
+  /* Rarity + role coloring */
+  .cmpRarity { font-weight: 700; text-transform: capitalize; }
+  .rar-common { color: #6d6d6d; }
+  .rar-uncommon { color: #3a9d23; }
+  .rar-rare { color: #2e6fd6; }
+  .rar-epic { color: #9b3fd4; }
+  .rar-legendary { color: #d67c1a; }
+  .cmpRole { display: inline-block; padding: 0.1em 0.5em; border-radius: 0.8em; font-size: 0.78em; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 0.02em; }
+  .role-tank { background: #2e6fd6; }
+  .role-healer { background: #3a9d23; }
+  .role-dps { background: #d64545; }
+
+  /* Compare tray */
+  .cmpTray { border: 2px dashed #b6d98a; border-radius: 0.8em; padding: 0.6em 0.8em; margin: 0 0 1em; background: #fbfef4; }
+  .cmpTrayHead { display: flex; align-items: center; justify-content: space-between; font-weight: 700; color: #4a5a2e; margin-bottom: 0.5em; }
+  .cmpClearBtn { font-size: 0.8em; padding: 0.2em 0.8em; margin: 0; }
+  .cmpTrayCards { display: flex; flex-wrap: wrap; gap: 0.6em; }
+  .cmpCard { flex: 1 1 8.5em; min-width: 8.5em; max-width: 12em; border: 2px solid #d7e8bd; border-radius: 0.6em; background: #fff; padding: 0.55em 0.65em; position: relative; }
+  .cmpCardName { font-weight: 700; font-size: 0.95em; line-height: 1.2; margin: 0 1.1em 0.35em 0; }
+  .cmpCardRow { display: flex; justify-content: space-between; font-size: 0.82em; color: #556; padding: 0.1em 0; }
+  .cmpCardRow b { color: #333; }
+  .cmpCardStat { margin-top: 0.3em; font-weight: 700; font-size: 1.05em; text-align: right; }
+  .cmpUnpin { position: absolute; top: 0.2em; right: 0.35em; background: none; border: none; cursor: pointer; font-size: 1em; color: #b3b3a0; line-height: 1; }
+  .cmpUnpin:hover { color: #d64545; }
+
+  @media (max-width: 480px) {
+    .cmpControls { gap: 0.45em; }
+    .cmpSearch { flex-basis: 100%; max-width: none; }
+  }
+</style>
+
+<script type="module">
+  /* apiKey is public by design; items/ is client-READ-ONLY (kennyBot seeds it). */
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3aWINWIBQ4rM_Ua2EOtr_Tw9rGhYdoS0",
+    authDomain: "okrafans.firebaseapp.com",
+    databaseURL: "https://okrafans-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "okrafans",
+    storageBucket: "okrafans.firebasestorage.app",
+    messagingSenderId: "56095817168",
+    appId: "1:56095817168:web:6355809cae65797ca28dd5"
+  };
+
+  const RARITY_RANK = { common: 0, uncommon: 1, rare: 2, epic: 3, legendary: 4 };
+  const esc = (s) => { const d = document.createElement("div"); d.textContent = (s == null ? "" : String(s)); return d.innerHTML; };
+  const cap = (s) => String(s || "").charAt(0).toUpperCase() + String(s || "").slice(1);
+  const statOf = (it) => (it && it.bonuses && it.role && it.bonuses[it.role]) || 0;
+
+  const els = {
+    body: document.getElementById("cmpBody"),
+    count: document.getElementById("cmpCount"),
+    note: document.getElementById("cmpNote"),
+    tray: document.getElementById("cmpTray"),
+    trayCards: document.getElementById("cmpTrayCards"),
+    clear: document.getElementById("cmpClear"),
+    search: document.getElementById("cmpSearch"),
+    role: document.getElementById("cmpRole"),
+    slot: document.getElementById("cmpSlot"),
+    rarity: document.getElementById("cmpRarity"),
+    set: document.getElementById("cmpSet"),
+    sort: document.getElementById("cmpSort"),
+  };
+
+  const MAX_PIN = 4;
+  const pinned = new Map();     // id -> item
+  let ALL = [];                 // full catalog (array)
+
+  /* ---- fallback: the build-time export, so we render instantly ---- */
+  try {
+    const raw = JSON.parse(document.getElementById("itemsFallback").textContent || "[]");
+    if (Array.isArray(raw)) ALL = raw;
+  } catch (e) { ALL = []; }
+
+  function filtered() {
+    const q = els.search.value.trim().toLowerCase();
+    const f = { role: els.role.value, slot: els.slot.value, rarity: els.rarity.value, set: els.set.value };
+    let rows = ALL.filter((it) =>
+      (f.role === "all" || it.role === f.role) &&
+      (f.slot === "all" || it.slot === f.slot) &&
+      (f.rarity === "all" || it.rarity === f.rarity) &&
+      (f.set === "all" || it.set === f.set) &&
+      (!q || String(it.name || "").toLowerCase().includes(q)));
+
+    const sort = els.sort.value;
+    rows = rows.slice().sort((a, b) => {
+      if (sort === "bonus") return statOf(b) - statOf(a) || (a.order - b.order);
+      if (sort === "rarity") return (RARITY_RANK[b.rarity] - RARITY_RANK[a.rarity]) || (a.order - b.order);
+      if (sort === "name") return String(a.name).localeCompare(String(b.name));
+      return a.order - b.order; // "set" = authored order (Starter → S1 → S2 → S3, rarity ladder)
+    });
+    return rows;
+  }
+
+  function rowHtml(it) {
+    const isPinned = pinned.has(it.id);
+    return '<tr>' +
+      '<td class="cmpPinCol"><button class="cmpPin' + (isPinned ? ' isPinned' : '') + '" data-id="' + esc(it.id) + '" ' +
+        'title="' + (isPinned ? 'Unpin from compare' : 'Pin to compare') + '" aria-pressed="' + isPinned + '">' +
+        (isPinned ? '★' : '☆') + '</button></td>' +
+      '<td class="cmpName">' + esc(it.name) + '</td>' +
+      '<td>' + esc(it.set) + '</td>' +
+      '<td>' + cap(it.slot) + '</td>' +
+      '<td><span class="cmpRarity rar-' + esc(it.rarity) + '">' + cap(it.rarity) + '</span></td>' +
+      '<td><span class="cmpRole role-' + esc(it.role) + '">' + esc(it.role) + '</span></td>' +
+      '<td class="cmpStat">+' + statOf(it) + '</td>' +
+    '</tr>';
+  }
+
+  function renderTable() {
+    const rows = filtered();
+    els.count.textContent = "Showing " + rows.length + " of " + ALL.length + " items";
+    els.body.innerHTML = rows.length
+      ? rows.map(rowHtml).join("")
+      : '<tr><td colspan="7" class="cmpEmpty">No gear matches those filters.</td></tr>';
+    els.body.querySelectorAll(".cmpPin").forEach((btn) =>
+      btn.addEventListener("click", () => togglePin(btn.dataset.id)));
+  }
+
+  function cardHtml(it) {
+    return '<div class="cmpCard">' +
+      '<button class="cmpUnpin" data-id="' + esc(it.id) + '" title="Remove" aria-label="Remove ' + esc(it.name) + '">✕</button>' +
+      '<p class="cmpCardName">' + esc(it.name) + '</p>' +
+      '<div class="cmpCardRow"><span>Set</span><b>' + esc(it.set) + '</b></div>' +
+      '<div class="cmpCardRow"><span>Slot</span><b>' + cap(it.slot) + '</b></div>' +
+      '<div class="cmpCardRow"><span>Rarity</span><b class="rar-' + esc(it.rarity) + '">' + cap(it.rarity) + '</b></div>' +
+      '<div class="cmpCardRow"><span>Role</span><b>' + esc(it.role) + '</b></div>' +
+      '<p class="cmpCardStat rar-' + esc(it.rarity) + '">+' + statOf(it) + ' ' + esc(it.role) + '</p>' +
+    '</div>';
+  }
+
+  function renderTray() {
+    els.tray.hidden = pinned.size === 0;
+    els.trayCards.innerHTML = [...pinned.values()].map(cardHtml).join("");
+    els.trayCards.querySelectorAll(".cmpUnpin").forEach((btn) =>
+      btn.addEventListener("click", () => togglePin(btn.dataset.id)));
+  }
+
+  function togglePin(id) {
+    if (pinned.has(id)) {
+      pinned.delete(id);
+    } else {
+      if (pinned.size >= MAX_PIN) {
+        els.note.textContent = "Compare tray is full (" + MAX_PIN + ") — unpin one first.";
+        return;
+      }
+      const it = ALL.find((x) => x.id === id);
+      if (it) pinned.set(id, it);
+    }
+    els.note.textContent = "";
+    renderTray();
+    renderTable();
+  }
+
+  els.clear.addEventListener("click", () => { pinned.clear(); renderTray(); renderTable(); });
+  ["input", "change"].forEach((ev) => {
+    els.search.addEventListener(ev, renderTable);
+    [els.role, els.slot, els.rarity, els.set, els.sort].forEach((s) => s.addEventListener(ev, renderTable));
+  });
+
+  // First paint from the fallback (instant, offline-safe).
+  renderTable();
+  renderTray();
+
+  /* ---- live upgrade from Firebase items/ (drops the stale flag if any) ---- */
+  try {
+    const appMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const dbMod  = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+    const { ref, onValue } = dbMod;
+    const db = dbMod.getDatabase(appMod.initializeApp(firebaseConfig));
+    if (new URLSearchParams(location.search).has("dev")) {
+      try { dbMod.connectDatabaseEmulator(db, "127.0.0.1", 9000); } catch (e) {}
+    }
+    onValue(ref(db, "items"), (snap) => {
+      const val = snap.val() || {};
+      const live = Object.keys(val).map((id) => ({ id, ...val[id] }))
+        .filter((it) => it && it.name && it.role);
+      if (!live.length) return;      // empty/not-seeded yet → keep the fallback
+      ALL = live;
+      // Re-attach a stable order if a live record somehow lacks one.
+      ALL.forEach((it, i) => { if (typeof it.order !== "number") it.order = i; });
+      // Drop any pins that no longer exist in the live catalog.
+      [...pinned.keys()].forEach((id) => { if (!ALL.some((x) => x.id === id)) pinned.delete(id); });
+      renderTray();
+      renderTable();
+    }, () => { /* unreachable → fallback stays */ });
+  } catch (e) { /* Firebase failed to load → fallback stays */ }
+</script>

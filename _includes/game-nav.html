@@ -2,12 +2,13 @@
   Shared raid-game page nav. Used on every game surface so the links stay in sync.
   Pass `current` to mark the active page:
     {% include game-nav.html current="raid" %}
-  Valid values: raid | arena | leaderboard | archive | how-to-play (omit on the home page).
+  Valid values: raid | arena | leaderboard | items | archive | how-to-play (omit on the home page).
 {%- endcomment -%}
 <nav class="gameNav" aria-label="Okra raid game pages">
   <a class="gameNavLink" href="{{ '/raid/' | relative_url }}"{% if include.current == 'raid' %} aria-current="page"{% endif %}>🌱 Muster</a>
   <a class="gameNavLink" href="{{ '/arena/' | relative_url }}"{% if include.current == 'arena' %} aria-current="page"{% endif %}>⚔️ Arena</a>
   <a class="gameNavLink" href="{{ '/leaderboard/' | relative_url }}"{% if include.current == 'leaderboard' %} aria-current="page"{% endif %}>🏆 Leaderboard</a>
+  <a class="gameNavLink" href="{{ '/items/' | relative_url }}"{% if include.current == 'items' %} aria-current="page"{% endif %}>🎒 Loot</a>
   <a class="gameNavLink" href="{{ '/archive/' | relative_url }}"{% if include.current == 'archive' %} aria-current="page"{% endif %}>📜 Past Raids</a>
   <a class="gameNavLink" href="{{ '/how-to-play/' | relative_url }}"{% if include.current == 'how-to-play' %} aria-current="page"{% endif %}>📖 How to Play</a>
 </nav>
