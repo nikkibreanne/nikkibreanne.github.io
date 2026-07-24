@@ -1,0 +1,480 @@
+<section class="infoSection">
+  <div class="infoPanel gifPanel">
+    <h2>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+      <span>GIF CAPTIONER</span>
+      <img class="wiggleOkra okraInline" src="{{ '/assets/img/Okr-white.png' | relative_url }}" alt=""/>
+    </h2>
+    <p class="infoDisclaimer">
+      🎞️ Paste a GIF link, slap some words on it, download it. It all happens right here in your browser
+      &mdash; nothing gets uploaded and nothing gets saved anywhere.
+    </p>
+
+    <div class="gifField">
+      <label class="gifLabel" for="gifUrl">Tenor or Giphy link</label>
+      <div class="gifRow">
+        <input type="url" id="gifUrl" class="gifInput" spellcheck="false"
+               placeholder="https://media.tenor.com/… or a Giphy link"/>
+        <button id="gifLoad" class="pollBtn gifBtnSm" type="button">Load</button>
+      </div>
+    </div>
+
+    <p id="gifMsg" class="factNote" aria-live="polite"></p>
+
+    <div id="gifStage" class="gifStage">
+      <p class="gifEmpty">Your GIF shows up here 🌱</p>
+    </div>
+    <p id="gifCredit" class="gifCredit"></p>
+
+    <div id="gifControls" class="gifControls" hidden>
+      <div class="gifField">
+        <label class="gifLabel" for="gifText">Caption</label>
+        <input type="text" id="gifText" class="gifInput" maxlength="18" value="morning???"/>
+      </div>
+
+      <div class="gifField">
+        <span class="gifLabel">Colour</span>
+        <div class="gifSwatches" id="gifSwatches" role="group" aria-label="Caption colour"></div>
+      </div>
+
+      <div class="gifTwoUp">
+        <div class="gifField">
+          <label class="gifLabel" for="gifSize">Size</label>
+          <input type="range" id="gifSize" class="gifRange" min="8" max="26" value="16"/>
+        </div>
+        <div class="gifField">
+          <span class="gifLabel">Snap to</span>
+          <div class="gifSeg" id="gifPlace" role="group" aria-label="Caption placement">
+            <button type="button" data-v="top">Top</button>
+            <button type="button" data-v="bottom" aria-pressed="true">Bottom</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="gifDragHint">👆 Drag the words around on the GIF to put them exactly where you want.</p>
+
+      <button id="gifRender" class="pollBtn gifGo" type="button">💾 Download it</button>
+    </div>
+
+    <p class="gifHelpLink">
+      Tenor link not working? <button type="button" id="gifHelpOpen" class="gifLinkBtn">Here&rsquo;s the trick 🌱</button>
+    </p>
+  </div>
+</section>
+
+<dialog id="gifHelp" class="gifDialog" aria-labelledby="gifHelpTitle">
+  <h3 id="gifHelpTitle">Tenor needs one extra click</h3>
+  <p class="gifDialogWhy">
+    Tenor won&rsquo;t let other websites read their pages, so the link from their share button
+    doesn&rsquo;t say where the actual GIF lives. Grabbing the GIF itself only takes a second:
+  </p>
+  <ol class="gifSteps">
+    <li>Open the GIF on <strong>tenor.com</strong>.</li>
+    <li><strong>Right-click it</strong> &mdash; on a phone, press and hold.</li>
+    <li>Choose <strong>&ldquo;Copy image address&rdquo;</strong> (Safari says &ldquo;Copy Image Link&rdquo;).</li>
+    <li>Paste it here. It&rsquo;ll start with <code>media.tenor.com</code>.</li>
+  </ol>
+  <p class="gifDialogTip">
+    ✨ Don&rsquo;t worry if you grab a small one &mdash; we swap in the biggest version Tenor has.
+  </p>
+  <p class="gifDialogTip">
+    🍿 Or use a <strong>Giphy</strong> link instead. Those work as-is, no extra step.
+  </p>
+  <form method="dialog"><button class="pollBtn gifBtnSm" type="submit">Got it</button></form>
+</dialog>
+
+<style>
+  /* The site has no global border-box and no dark-mode rules — .infoPanel is
+     always light. Both matter here: size everything with border-box, and don't
+     add a prefers-color-scheme block or the controls invert against a white
+     panel. */
+  .gifPanel { max-width: 46em; }
+  .gifPanel .gifInput,
+  .gifPanel .gifRange,
+  .gifPanel .gifSeg button,
+  .gifPanel .gifSwatches button { box-sizing: border-box; }
+
+  .gifField { display: flex; flex-direction: column; gap: .3em; text-align: left; margin: .7em 0; }
+  .gifLabel { font-weight: 700; font-size: .85em; color: #3f6220; letter-spacing: .02em; }
+  .gifRow { display: flex; gap: .5em; flex-wrap: wrap; }
+  .gifInput {
+    width: 100%; min-width: 0; font-family: inherit; font-size: 1em;
+    padding: .45em .6em; border: 3px solid #4f7a28; border-radius: 8px;
+    background: #f7fbef; color: #2f4d18;
+  }
+  /* Only inside the URL row does the input flex — .gifField is a *column*
+     flex container, so a flex-basis here would set the input's HEIGHT. */
+  .gifRow .gifInput { flex: 1 1 14em; width: auto; }
+  .gifInput:focus-visible, .gifRange:focus-visible { outline: 3px solid #e0b341; outline-offset: 1px; }
+  .gifBtnSm { font-size: 1em; margin: 0; padding: .45em 1.1em; }
+
+  .gifStage {
+    margin: .8em auto 0; border: 4px dashed #8bbf4d; border-radius: 10px;
+    background: #f7fbef; min-height: 11em; display: grid; place-items: center;
+    overflow: hidden; padding: .5em;
+  }
+  .gifStage canvas {
+    max-width: 100%; height: auto; display: block; border-radius: 4px;
+    touch-action: none;                 /* let us drag without the page scrolling */
+    cursor: grab;
+  }
+  .gifStage canvas.gifGrabbing { cursor: grabbing; }
+  .gifEmpty { margin: 0; opacity: .7; font-style: italic; }
+  .gifCredit { font-size: .8em; color: #556; margin: .45em 0 0; min-height: 1em; }
+
+  .gifControls { border-top: 2px dashed #8bbf4d; margin-top: 1em; padding-top: .4em; }
+  .gifTwoUp { display: flex; gap: 1.2em; flex-wrap: wrap; align-items: flex-end; }
+  .gifTwoUp .gifField { flex: 1 1 12em; }
+
+  .gifRange { width: 100%; accent-color: #4f7a28; height: 1.9em; }
+
+  .gifSwatches { display: flex; gap: .45em; flex-wrap: wrap; }
+  .gifSwatches button {
+    width: 2.1em; height: 2.1em; border-radius: 8px; cursor: pointer;
+    border: 3px solid #4f7a28; padding: 0;
+  }
+  .gifSwatches button[aria-pressed="true"] { border-color: #e0b341; box-shadow: 0 0 0 3px #fff0d4; }
+
+  .gifSeg { display: flex; gap: .4em; }
+  .gifSeg button {
+    font-family: inherit; font-size: 1em; font-weight: 700; cursor: pointer;
+    padding: .35em 1.1em; border: 3px solid #4f7a28; border-radius: 8px;
+    background: #f7fbef; color: #2f4d18;
+  }
+  .gifSeg button[aria-pressed="true"] { background: #8bbf4d; color: #1c2f0e; border-color: #2f4d18; }
+
+  .gifDragHint { font-size: .82em; color: #6a4a10; margin: .8em 0 0; font-style: italic; }
+  .gifGo { margin-top: .9em; }
+  .gifBusy { opacity: .55; cursor: progress; }
+
+  .gifHelpLink { font-size: .85em; margin: 1em 0 0; color: #556; }
+  .gifLinkBtn {
+    font-family: inherit; font-size: 1em; background: none; border: 0; padding: 0;
+    color: #3f6220; font-weight: 700; text-decoration: underline; cursor: pointer;
+  }
+
+  .gifDialog {
+    border: 6px ridge #4f7a28; border-radius: 12px; padding: 1.2em 1.5em 1.4em;
+    max-width: 30em; color: #2f4d18; background: #fffdf5;
+    box-shadow: 0 0 0 4px #8bbf4d, 0 6px 24px rgba(0,0,0,.45);
+  }
+  .gifDialog::backdrop { background: rgba(31, 46, 15, .6); }
+  .gifDialog h3 { margin: 0 0 .5em; font-size: 1.3em; text-align: center; }
+  .gifDialogWhy { margin: 0 0 .8em; font-size: .95em; line-height: 1.4; }
+  .gifSteps { text-align: left; margin: 0 0 .9em; padding-left: 1.3em; line-height: 1.5; }
+  .gifSteps li { margin: .3em 0; }
+  .gifSteps code { background: #2f4d18; color: #eaffd6; border-radius: 4px; padding: 0 .35em; font-size: .9em; }
+  .gifDialogTip {
+    margin: .5em 0 0; font-size: .9em; background: #fff0d4;
+    border: 2px solid #e0b341; border-radius: 8px; padding: .45em .7em; color: #6a4a10;
+  }
+  .gifDialog form { margin-top: 1.1em; text-align: center; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gifSwatches button, .gifSeg button { transition: none; }
+  }
+</style>
+
+<script type="module">
+  /* Everything here runs in the visitor's browser. The GIF is fetched straight
+   * from Tenor's / Giphy's CDN, captioned on a canvas, re-encoded, and handed to
+   * the download bar. No okrafans server ever sees the file, because there isn't
+   * one — this page is static. */
+  import { GIFEncoder, quantize, applyPalette } from "{{ '/assets/js/gifenc.js' | relative_url }}";
+
+  const COLOURS = ["#ffffff", "#ffe234", "#ff4fd8", "#8bbf4d", "#ff5c39", "#5ac8fa"];
+  const MEME_FONT = 'Impact, Haettenschweiler, "Arial Narrow Bold", "Arial Black", sans-serif';
+  const LADDER = [[480, 15], [420, 15], [400, 12], [360, 12], [320, 10], [280, 10]];
+  const MAX_BYTES = 7_000_000;
+  const PRESETS = { top: 0.13, bottom: 0.87 };
+
+  const $ = id => document.getElementById(id);
+  /* x/y are fractions of the frame, so the caption lands identically whatever
+   * size we end up encoding at. sizeFrac is the cap height as a fraction of width. */
+  const state = {
+    frames: [], w: 0, h: 0, raf: null,
+    colour: COLOURS[0], x: 0.5, y: PRESETS.bottom, sizeFrac: 0.16,
+  };
+  const say = t => { $("gifMsg").textContent = t; };
+
+  /* Thrown once we've already shown a dialog and don't want the generic error
+   * line underneath it as well. */
+  const HANDLED = Symbol("handled");
+
+  /* ---------- what did they paste? ---------- */
+  const isTenorPage  = u => /^https:\/\/(www\.)?tenor\.com\//i.test(u);
+  const isTenorMedia = u => /^https:\/\/media\d*\.tenor\.com\//i.test(u);
+  const isGiphyPage  = u => /^https:\/\/(www\.)?giphy\.com\//i.test(u);
+  const isGiphyMedia = u => /^https:\/\/(media\d*|i)\.giphy\.com\//i.test(u);
+
+  /* Tenor puts the size in the media id's suffix, and "copy image address" hands
+   * out AAAAM — 220px wide, and with frames dropped (one test GIF went 48 -> 16).
+   * Same id, different suffix, so we just ask for a bigger one. Best first; the
+   * loader falls through on a miss. Also normalises .mp4 / .webp addresses.
+   *   AAAAd ≈ full size    AAAAC ≈ 498px    AAAAM = 220px (what you get copying) */
+  function tenorCandidates(url) {
+    const id = new URL(url).pathname.match(/\/(?:m\/)?([A-Za-z0-9_-]{11})AAA[A-Za-z0-9]{2}\//)?.[1];
+    if (!id) return [url];
+    return [
+      `https://media.tenor.com/${id}AAAAd/okrafans.gif`,
+      `https://media.tenor.com/${id}AAAAC/okrafans.gif`,
+      `https://media.tenor.com/${id}AAAAM/okrafans.gif`,
+      url,
+    ];
+  }
+
+  /* A Giphy id is the last dash-separated chunk of the slug and the media URL is
+   * built straight from it, so Giphy needs no lookup at all. */
+  function giphyCandidates(url) {
+    const slug = new URL(url).pathname.split("/").filter(Boolean).pop() || "";
+    const id = slug.split("-").pop();
+    if (!id || id.length < 6) throw new Error("Couldn't find the GIF id in that Giphy link.");
+    return [`https://media.giphy.com/media/${id}/giphy.gif`];
+  }
+
+  function candidatesFor(url) {
+    if (isTenorMedia(url)) return tenorCandidates(url);
+    if (isGiphyMedia(url)) return [url];
+    if (isGiphyPage(url)) return giphyCandidates(url);
+    if (isTenorPage(url)) { openHelp(); throw HANDLED; }
+    throw new Error("Paste a link from Tenor or Giphy.");
+  }
+
+  /* ---------- caption ---------- */
+  /* Returns the drawn box so the drag handler knows what it's grabbing. */
+  function drawCaption(ctx, w, h, text) {
+    if (!text) return null;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    let size = Math.max(8, Math.round(state.sizeFrac * w));
+    for (; size > 8; size--) {
+      ctx.font = `${size}px ${MEME_FONT}`;
+      if (ctx.measureText(text).width <= w * 0.94) break;
+    }
+    ctx.font = `${size}px ${MEME_FONT}`;
+    const stroke = Math.max(2, Math.round(size * 0.16));
+    const tw = ctx.measureText(text).width;
+    const half = size * 0.62 + stroke;
+    /* keep it on the canvas however far they drag */
+    const x = Math.min(Math.max(state.x * w, tw / 2 + stroke), w - tw / 2 - stroke);
+    const y = Math.min(Math.max(state.y * h, half), h - half);
+
+    ctx.lineJoin = "round";
+    ctx.miterLimit = 2;
+    ctx.lineWidth = stroke * 2;          /* half sits outside the glyph => fat outline */
+    ctx.strokeStyle = "#000";
+    ctx.strokeText(text, x, y);
+    ctx.fillStyle = state.colour;
+    ctx.fillText(text, x, y);
+    return { x, y, w: tw, h: half * 2 };
+  }
+
+  /* ---------- decode ---------- */
+  async function decode(buf) {
+    if (!("ImageDecoder" in window))
+      throw new Error("This browser can't take GIFs apart — try Chrome, Edge, or a newer Safari.");
+    const dec = new ImageDecoder({ data: buf, type: "image/gif" });
+    await dec.tracks.ready;              /* selectedTrack is null before this */
+    await dec.completed;                 /* every frame buffered, so the count is final */
+    const n = dec.tracks.selectedTrack.frameCount;
+    if (n < 2) throw new Error("That one's a still image, not an animation — pick another.");
+    const frames = [];
+    for (let i = 0; i < n; i++) {
+      const { image } = await dec.decode({ frameIndex: i });
+      frames.push({
+        bitmap: await createImageBitmap(image),
+        ms: Math.max(20, Math.round((image.duration ?? 100000) / 1000)),
+      });
+      image.close();
+    }
+    dec.close();
+    return frames;
+  }
+
+  /* ---------- live preview ---------- */
+  function preview() {
+    cancelAnimationFrame(state.raf);
+    const stage = $("gifStage");
+    stage.replaceChildren();
+    const cv = document.createElement("canvas");
+    cv.width = state.w;
+    cv.height = state.h;
+    stage.append(cv);
+    attachDrag(cv);
+    const ctx = cv.getContext("2d");
+    let i = 0, next = 0;
+    const tick = t => {
+      if (t >= next) {
+        const f = state.frames[i % state.frames.length];
+        ctx.clearRect(0, 0, cv.width, cv.height);
+        ctx.drawImage(f.bitmap, 0, 0);
+        drawCaption(ctx, cv.width, cv.height, $("gifText").value);
+        next = t + f.ms;
+        i++;
+      }
+      state.raf = requestAnimationFrame(tick);
+    };
+    state.raf = requestAnimationFrame(tick);
+  }
+
+  /* Drag the caption. The canvas is laid out with max-width:100%, so its CSS box
+   * rarely matches its pixel size — go through getBoundingClientRect, not
+   * offsetX, or the caption jumps on narrow screens. */
+  function attachDrag(cv) {
+    let dragging = false;
+    const put = e => {
+      const r = cv.getBoundingClientRect();
+      state.x = Math.min(Math.max((e.clientX - r.left) / r.width, 0), 1);
+      state.y = Math.min(Math.max((e.clientY - r.top) / r.height, 0), 1);
+      syncPlaceButtons();
+    };
+    cv.addEventListener("pointerdown", e => {
+      dragging = true;
+      cv.setPointerCapture(e.pointerId);
+      cv.classList.add("gifGrabbing");
+      put(e);
+    });
+    cv.addEventListener("pointermove", e => { if (dragging) put(e); });
+    const stop = e => {
+      dragging = false;
+      cv.classList.remove("gifGrabbing");
+      if (cv.hasPointerCapture?.(e.pointerId)) cv.releasePointerCapture(e.pointerId);
+    };
+    cv.addEventListener("pointerup", stop);
+    cv.addEventListener("pointercancel", stop);
+  }
+
+  /* The snap buttons are presets, not modes — once you drag away from one,
+   * neither should look selected. */
+  function syncPlaceButtons() {
+    for (const b of $("gifPlace").children) {
+      const near = Math.abs(state.y - PRESETS[b.dataset.v]) < 0.02 && Math.abs(state.x - 0.5) < 0.02;
+      b.setAttribute("aria-pressed", String(near));
+    }
+  }
+
+  /* ---------- encode ---------- */
+  const seconds = () => state.frames.reduce((a, f) => a + f.ms, 0) / 1000;
+
+  async function encodeAt(width, fps) {
+    const w = Math.min(width, state.w);
+    const h = Math.round(state.h * (w / state.w) / 2) * 2;
+    const cv = document.createElement("canvas");
+    cv.width = w;
+    cv.height = h;
+    const ctx = cv.getContext("2d", { willReadFrequently: true });
+    const enc = GIFEncoder();
+    const stride = Math.max(1, Math.round(state.frames.length / Math.max(1, fps * seconds())));
+    for (let i = 0; i < state.frames.length; i += stride) {
+      const f = state.frames[i];
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(f.bitmap, 0, 0, w, h);
+      drawCaption(ctx, w, h, $("gifText").value);
+      const { data } = ctx.getImageData(0, 0, w, h);
+      const palette = quantize(data, 256, { format: "rgb565" });
+      enc.writeFrame(applyPalette(data, palette, "rgb565"), w, h, { palette, delay: f.ms * stride });
+    }
+    enc.finish();
+    return enc.bytesView();
+  }
+
+  /* ---------- help dialog ---------- */
+  function openHelp() {
+    const d = $("gifHelp");
+    if (typeof d.showModal === "function") d.showModal();
+    else d.setAttribute("open", "");        /* very old browsers: inline, still readable */
+  }
+  $("gifHelpOpen").addEventListener("click", openHelp);
+
+  /* ---------- actions ---------- */
+  $("gifLoad").addEventListener("click", async () => {
+    const url = $("gifUrl").value.trim();
+    if (!url) return say("Paste a link first 🌱");
+    $("gifLoad").disabled = true;
+    try {
+      say("Fetching…");
+      const candidates = candidatesFor(url);
+
+      /* Best quality first, falling back to whatever Tenor actually has. */
+      let buf = null, lastErr = null;
+      for (const candidate of candidates) {
+        try {
+          const res = await fetch(candidate);
+          if (!res.ok) { lastErr = new Error(`That GIF wouldn't download (${res.status}).`); continue; }
+          buf = await res.arrayBuffer();
+          break;
+        } catch (e) { lastErr = e; }
+      }
+      if (!buf) throw lastErr ?? new Error("That GIF wouldn't download.");
+
+      say("Taking it apart…");
+      state.frames = await decode(buf);
+      state.w = state.frames[0].bitmap.width;
+      state.h = state.frames[0].bitmap.height;
+
+      $("gifCredit").textContent = isTenorMedia(url) ? "via Tenor" : "";
+      $("gifControls").hidden = false;
+      preview();
+      say("");
+    } catch (err) {
+      if (err === HANDLED) say("");
+      else say(`😬 ${err.message}`);
+    } finally {
+      $("gifLoad").disabled = false;
+    }
+  });
+
+  $("gifRender").addEventListener("click", async () => {
+    const btn = $("gifRender");
+    btn.disabled = true;
+    btn.classList.add("gifBusy");
+    try {
+      say("Putting it back together…");
+      for (const [width, fps] of LADDER) {
+        await new Promise(r => setTimeout(r));      /* let the message paint */
+        const bytes = await encodeAt(width, fps);
+        if (bytes.byteLength <= MAX_BYTES || width === LADDER.at(-1)[0]) {
+          const slug = $("gifText").value.replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase();
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(new Blob([bytes], { type: "image/gif" }));
+          a.download = `${slug || "okrafans"}.gif`;
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+          say("Done — check your downloads 🎉");
+          return;
+        }
+      }
+    } catch (err) {
+      say(`😬 ${err.message}`);
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove("gifBusy");
+    }
+  });
+
+  /* ---------- controls ---------- */
+  COLOURS.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.style.background = c;
+    b.setAttribute("aria-pressed", String(i === 0));
+    b.setAttribute("aria-label", `Caption colour ${c}`);
+    b.addEventListener("click", () => {
+      state.colour = c;
+      [...$("gifSwatches").children].forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    });
+    $("gifSwatches").append(b);
+  });
+
+  $("gifPlace").addEventListener("click", e => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    state.x = 0.5;
+    state.y = PRESETS[b.dataset.v];
+    syncPlaceButtons();
+  });
+
+  $("gifSize").addEventListener("input", e => { state.sizeFrac = Number(e.target.value) / 100; });
+
+  $("gifUrl").addEventListener("keydown", e => { if (e.key === "Enter") $("gifLoad").click(); });
+</script>
