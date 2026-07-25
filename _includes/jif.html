@@ -51,7 +51,7 @@
         </div>
       </div>
 
-      <p class="gifDragHint">👆 Drag the words around on the GIF to put them exactly where you want.</p>
+      <p class="gifDragHint">👆 Drag the words themselves to put them exactly where you want &mdash; swipe anywhere else on the GIF to scroll the page.</p>
 
       <button id="gifRender" class="pollBtn gifGo" type="button">💾 Download it</button>
     </div>
@@ -115,7 +115,10 @@
   }
   .gifStage canvas {
     max-width: 100%; height: auto; display: block; border-radius: 4px;
-    touch-action: none;                 /* let us drag without the page scrolling */
+    /* Vertical swipes scroll the page as normal; attachDrag cancels that for the
+       one gesture that starts on the caption. `none` here used to trap the scroll
+       — on a phone the canvas is a third of the screen, so the page felt stuck. */
+    touch-action: pan-y;
     cursor: grab;
   }
   .gifStage canvas.gifGrabbing { cursor: grabbing; }
@@ -184,18 +187,49 @@
 
   const COLOURS = ["#ffffff", "#ffe234", "#ff4fd8", "#8bbf4d", "#ff5c39", "#5ac8fa"];
   const MEME_FONT = 'Impact, Haettenschweiler, "Arial Narrow Bold", "Arial Black", sans-serif';
-  const LADDER = [[480, 15], [420, 15], [400, 12], [360, 12], [320, 10], [280, 10]];
-  const MAX_BYTES = 7_000_000;
+  /* [width, fps] largest first. The bottom two rungs are only ever reached by a
+   * very long GIF that misses the cap at 280 — without them the encoder had no
+   * way to actually honour the limit and just handed back an oversized file. */
+  const LADDER = [[480, 15], [420, 15], [400, 12], [360, 12], [320, 10], [280, 10], [240, 8], [200, 8]];
   const PRESETS = { top: 0.13, bottom: 0.87 };
+
+  /* A phone has a fraction of the CPU and memory of a laptop, and the finished
+   * GIF is usually headed straight for a messaging app — so aim smaller there.
+   * Nothing is ever encoded above LADDER's first width, which is why capping the
+   * decode at it costs desktop nothing at all. */
+  const IS_MOBILE = navigator.userAgentData?.mobile ??
+    (matchMedia("(pointer: coarse)").matches && navigator.maxTouchPoints > 0);
+  const MAX_BYTES    = IS_MOBILE ? 4_000_000 : 7_000_000;
+  const MAX_FRAMES   = IS_MOBILE ? 150 : 240;
+  const MAX_DECODE_W = IS_MOBILE ? 400 : LADDER[0][0];
 
   const $ = id => document.getElementById(id);
   /* x/y are fractions of the frame, so the caption lands identically whatever
-   * size we end up encoding at. sizeFrac is the cap height as a fraction of width. */
+   * size we end up encoding at. sizeFrac is the cap height as a fraction of width.
+   * box is where the caption last landed on the preview canvas, so a touch can
+   * tell "grabbing the words" from "scrolling the page". */
   const state = {
-    frames: [], w: 0, h: 0, raf: null,
+    frames: [], w: 0, h: 0, raf: null, box: null,
     colour: COLOURS[0], x: 0.5, y: PRESETS.bottom, sizeFrac: 0.16,
   };
   const say = t => { $("gifMsg").textContent = t; };
+  /* Progress ticks share the status line with the final result, and that line is
+   * an aria-live region — announcing every percentage would be dozens of
+   * interruptions for a screen reader. So ticks are muted and only the stage
+   * changes and the outcome get announced. */
+  const tick = t => { $("gifMsg").setAttribute("aria-live", "off"); say(t); };
+  const announce = t => { $("gifMsg").setAttribute("aria-live", "polite"); say(t); };
+
+  /* Hand the main thread back so the browser can paint and keep answering taps.
+   * Decoding and encoding are otherwise one unbroken block of work, and a tab
+   * that can't repaint for thirty seconds is a tab the user calls frozen.
+   *
+   * Deliberately a plain task and not scheduler.yield(): yield() resumes the
+   * continuation ahead of already-queued work, which is great for throughput and
+   * terrible here — measured on a throttled phone it pushed the response to a tap
+   * out past 27s, because the encoder kept jumping the queue. A timer goes to the
+   * back of it, so taps and clicks get served in between. */
+  const breathe = () => new Promise(r => setTimeout(r));
 
   /* Thrown once we've already shown a dialog and don't want the generic error
    * line underneath it as well. */
@@ -271,21 +305,36 @@
 
   /* ---------- decode ---------- */
   async function decode(buf) {
+    /* Safari has never shipped ImageDecoder, and every iOS browser is Safari
+     * underneath — so don't send iPhone users off to install Chrome, it's the
+     * same engine and it won't help either. */
     if (!("ImageDecoder" in window))
-      throw new Error("This browser can't take GIFs apart — try Chrome, Edge, or a newer Safari.");
+      throw new Error("Safari can't take GIFs apart, so this doesn't work on iPhone or iPad yet — try Chrome, Edge or Firefox on Android or a computer.");
     const dec = new ImageDecoder({ data: buf, type: "image/gif" });
     await dec.tracks.ready;              /* selectedTrack is null before this */
     await dec.completed;                 /* every frame buffered, so the count is final */
     const n = dec.tracks.selectedTrack.frameCount;
     if (n < 2) throw new Error("That one's a still image, not an animation — pick another.");
+
+    /* Every frame is held as a full bitmap for as long as the GIF is loaded, so a
+     * long one is what actually runs a phone out of memory (a 248-frame 462x500
+     * GIF is ~229 MB). Keep every step'th frame and stretch its delay to match,
+     * so the animation still plays at the right speed. */
+    const step = Math.ceil(n / MAX_FRAMES);
     const frames = [];
-    for (let i = 0; i < n; i++) {
+    for (let i = 0, k = 0; i < n; i += step, k++) {
       const { image } = await dec.decode({ frameIndex: i });
+      const scale = Math.min(1, MAX_DECODE_W / image.displayWidth);
       frames.push({
-        bitmap: await createImageBitmap(image),
-        ms: Math.max(20, Math.round((image.duration ?? 100000) / 1000)),
+        bitmap: await createImageBitmap(image, {
+          resizeWidth: Math.max(1, Math.round(image.displayWidth * scale)),
+          resizeHeight: Math.max(1, Math.round(image.displayHeight * scale)),
+          resizeQuality: "high",
+        }),
+        ms: Math.max(20, Math.round((image.duration ?? 100000) / 1000)) * step,
       });
       image.close();
+      if (k % 8 === 7) { tick(`Taking it apart… ${Math.round(i / n * 100)}%`); await breathe(); }
     }
     dec.close();
     return frames;
@@ -308,7 +357,7 @@
         const f = state.frames[i % state.frames.length];
         ctx.clearRect(0, 0, cv.width, cv.height);
         ctx.drawImage(f.bitmap, 0, 0);
-        drawCaption(ctx, cv.width, cv.height, $("gifText").value);
+        state.box = drawCaption(ctx, cv.width, cv.height, $("gifText").value);
         next = t + f.ms;
         i++;
       }
@@ -321,14 +370,43 @@
    * rarely matches its pixel size — go through getBoundingClientRect, not
    * offsetX, or the caption jumps on narrow screens. */
   function attachDrag(cv) {
-    let dragging = false;
+    let dragging = false, ox = 0, oy = 0;
+    const clamp = v => Math.min(Math.max(v, 0), 1);
     const put = e => {
       const r = cv.getBoundingClientRect();
-      state.x = Math.min(Math.max((e.clientX - r.left) / r.width, 0), 1);
-      state.y = Math.min(Math.max((e.clientY - r.top) / r.height, 0), 1);
+      state.x = clamp((e.clientX - r.left) / r.width + ox);
+      state.y = clamp((e.clientY - r.top) / r.height + oy);
       syncPlaceButtons();
     };
+
+    /* On a phone the canvas is a third of the screen, so grabbing anywhere on it
+     * would mean you could never scroll past the GIF. A finger has to land on the
+     * words; a mouse can still click anywhere to place them, as it always could. */
+    const onWords = (clientX, clientY) => {
+      const b = state.box;
+      if (!b) return false;
+      const r = cv.getBoundingClientRect();
+      const sx = r.width / cv.width, sy = r.height / cv.height;
+      const pad = 12;                    /* fingertips aren't precise */
+      return Math.abs(clientX - (r.left + b.x * sx)) <= b.w * sx / 2 + pad
+          && Math.abs(clientY - (r.top + b.y * sy)) <= b.h * sy / 2 + pad;
+    };
+
+    /* touch-action can't say "only when you land on the caption", so the scroll
+     * is cancelled here instead — which only works from a non-passive listener. */
+    cv.addEventListener("touchstart", e => {
+      const t = e.touches[0];
+      if (t && onWords(t.clientX, t.clientY)) e.preventDefault();
+    }, { passive: false });
+
     cv.addEventListener("pointerdown", e => {
+      const mouse = e.pointerType === "mouse";
+      if (!mouse && !onWords(e.clientX, e.clientY)) return;
+      const r = cv.getBoundingClientRect();
+      /* Keep the grab offset on touch, or the words snap their centre under your
+       * finger the instant you touch them. A mouse click still means "put it here". */
+      ox = mouse ? 0 : state.x - (e.clientX - r.left) / r.width;
+      oy = mouse ? 0 : state.y - (e.clientY - r.top) / r.height;
       dragging = true;
       cv.setPointerCapture(e.pointerId);
       cv.classList.add("gifGrabbing");
@@ -356,26 +434,70 @@
   /* ---------- encode ---------- */
   const seconds = () => state.frames.reduce((a, f) => a + f.ms, 0) / 1000;
 
-  async function encodeAt(width, fps) {
+  /* Which frames a given rung of the ladder would encode, and at what size. */
+  function planFor(width, fps) {
     const w = Math.min(width, state.w);
     const h = Math.round(state.h * (w / state.w) / 2) * 2;
+    const stride = Math.max(1, Math.round(state.frames.length / Math.max(1, fps * seconds())));
+    const idx = [];
+    for (let i = 0; i < state.frames.length; i += stride) idx.push(i);
+    return { w, h, stride, idx };
+  }
+
+  async function encodeFrames({ w, h, stride, idx }, onProgress) {
     const cv = document.createElement("canvas");
     cv.width = w;
     cv.height = h;
     const ctx = cv.getContext("2d", { willReadFrequently: true });
     const enc = GIFEncoder();
-    const stride = Math.max(1, Math.round(state.frames.length / Math.max(1, fps * seconds())));
-    for (let i = 0; i < state.frames.length; i += stride) {
-      const f = state.frames[i];
+    const text = $("gifText").value;
+    let due = performance.now() + 50;
+    for (let k = 0; k < idx.length; k++) {
+      const f = state.frames[idx[k]];
       ctx.clearRect(0, 0, w, h);
       ctx.drawImage(f.bitmap, 0, 0, w, h);
-      drawCaption(ctx, w, h, $("gifText").value);
+      drawCaption(ctx, w, h, text);
       const { data } = ctx.getImageData(0, 0, w, h);
       const palette = quantize(data, 256, { format: "rgb565" });
       enc.writeFrame(applyPalette(data, palette, "rgb565"), w, h, { palette, delay: f.ms * stride });
+      /* Yield on a time budget rather than a frame count: quantising one frame is
+       * tens of milliseconds on a laptop and hundreds on a phone, so a fixed
+       * count either stalls slow devices or wastes yields on fast ones. */
+      if (performance.now() >= due) {
+        onProgress?.((k + 1) / idx.length);
+        await breathe();
+        due = performance.now() + 50;
+      }
     }
     enc.finish();
     return enc.bytesView();
+  }
+
+  /* Evenly spaced picks, endpoints included. */
+  const sampleOf = (idx, n) => idx.length <= n
+    ? idx
+    : Array.from({ length: n }, (_, i) => idx[Math.round(i * (idx.length - 1) / (n - 1))]);
+
+  /* Largest rung whose predicted size fits the cap, given a measured cost per pixel. */
+  const planFrom = perPixel => LADDER
+    .map(([width, fps]) => planFor(width, fps))
+    .find(p => perPixel * p.w * p.h * p.idx.length <= MAX_BYTES);
+
+  /* gifenc gives every frame its own palette, so frames compress independently
+   * and a handful of them predicts the whole file closely. Six sample frames cost
+   * about two percent of a pass and replace the old approach: encoding the entire
+   * GIF up to six times over to discover which size happened to fit. */
+  async function pickPlan() {
+    const top = planFor(...LADDER[0]);
+    /* On a short GIF the sample would be a fifth of the whole job, and the retry
+     * below already handles an overshoot in one exact step — so just go. */
+    if (top.idx.length <= 40) return top;
+    const sample = { ...top, idx: sampleOf(top.idx, 6) };
+    const bytes = await encodeFrames(sample);
+    /* Nothing on the ladder fitting means the smallest rung is the best we can
+     * do — falling back to the largest would be the worst of both worlds. */
+    return planFrom(bytes.byteLength / sample.idx.length / (top.w * top.h))
+      ?? planFor(...LADDER.at(-1));
   }
 
   /* ---------- help dialog ---------- */
@@ -389,10 +511,10 @@
   /* ---------- actions ---------- */
   $("gifLoad").addEventListener("click", async () => {
     const url = $("gifUrl").value.trim();
-    if (!url) return say("Paste a link first 🌱");
+    if (!url) return announce("Paste a link first 🌱");
     $("gifLoad").disabled = true;
     try {
-      say("Fetching…");
+      announce("Fetching…");
       const candidates = candidatesFor(url);
 
       /* Best quality first, falling back to whatever Tenor actually has. */
@@ -407,7 +529,7 @@
       }
       if (!buf) throw lastErr ?? new Error("That GIF wouldn't download.");
 
-      say("Taking it apart…");
+      announce("Taking it apart…");
       state.frames = await decode(buf);
       state.w = state.frames[0].bitmap.width;
       state.h = state.frames[0].bitmap.height;
@@ -415,10 +537,10 @@
       $("gifCredit").textContent = isTenorMedia(url) ? "via Tenor" : "";
       $("gifControls").hidden = false;
       preview();
-      say("");
+      announce("");
     } catch (err) {
-      if (err === HANDLED) say("");
-      else say(`😬 ${err.message}`);
+      if (err === HANDLED) announce("");
+      else announce(`😬 ${err.message}`);
     } finally {
       $("gifLoad").disabled = false;
     }
@@ -428,27 +550,36 @@
     const btn = $("gifRender");
     btn.disabled = true;
     btn.classList.add("gifBusy");
+    cancelAnimationFrame(state.raf);      /* the preview loop wants the same thread */
     try {
-      say("Putting it back together…");
-      for (const [width, fps] of LADDER) {
-        await new Promise(r => setTimeout(r));      /* let the message paint */
-        const bytes = await encodeAt(width, fps);
-        if (bytes.byteLength <= MAX_BYTES || width === LADDER.at(-1)[0]) {
-          const slug = $("gifText").value.replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase();
-          const a = document.createElement("a");
-          a.href = URL.createObjectURL(new Blob([bytes], { type: "image/gif" }));
-          a.download = `${slug || "okrafans"}.gif`;
-          a.click();
-          setTimeout(() => URL.revokeObjectURL(a.href), 10000);
-          say("Done — check your downloads 🎉");
-          return;
-        }
+      announce("Working out the right size…");
+      await breathe();
+      let plan = await pickPlan();
+      const pct = p => tick(`Putting it back together… ${Math.round(p * 100)}%`);
+      let bytes = await encodeFrames(plan, pct);
+
+      /* If the estimate overshot we now know this GIF's real cost per pixel, so
+       * the second guess goes straight to a size that fits rather than taking
+       * another blind step down the ladder. */
+      if (bytes.byteLength > MAX_BYTES) {
+        const next = planFrom(bytes.byteLength / plan.idx.length / (plan.w * plan.h))
+          ?? planFor(...LADDER.at(-1));
+        if (next.w < plan.w) { plan = next; bytes = await encodeFrames(plan, pct); }
       }
+
+      const slug = $("gifText").value.replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([bytes], { type: "image/gif" }));
+      a.download = `${slug || "okrafans"}.gif`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+      announce("Done — check your downloads 🎉");
     } catch (err) {
-      say(`😬 ${err.message}`);
+      announce(`😬 ${err.message}`);
     } finally {
       btn.disabled = false;
       btn.classList.remove("gifBusy");
+      if (state.frames.length) preview();
     }
   });
 
