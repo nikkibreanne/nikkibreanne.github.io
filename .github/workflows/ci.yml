@@ -1,0 +1,74 @@
+name: ci
+
+# Checks pull requests. It does NOT deploy: Pages is still set to build this
+# site itself from master ("legacy" build type), and that stays untouched. The
+# point of the build job is to find out *before* merging what Pages would only
+# tell you afterwards, by email, once the live site had already stopped updating.
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+# A new push to a PR makes the previous run irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # The same pinned Jekyll that Pages uses, not the Gemfile's 4.3 — the
+      # Gemfile is for local preview only and says so. Building with anything
+      # else would be testing a renderer that never sees production.
+      - name: Build with the Pages renderer
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+
+      - name: Upload built site
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: ./_site
+          retention-days: 5
+
+  links:
+    name: links
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download built site
+        uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: ./_site
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+
+      # Pinned: an html-proofer major bump changes both the CLI and what counts
+      # as a failure, and that should be a deliberate edit rather than a Tuesday
+      # morning surprise on an unrelated PR.
+      - name: Install html-proofer
+        run: gem install html-proofer -v 5.0.9
+
+      # External links are deliberately not checked. They rot on someone else's
+      # schedule, and a red build caused by a third party going down teaches
+      # everyone to ignore red builds.
+      - name: Check internal links and images
+        run: |
+          htmlproofer ./_site \
+            --disable-external \
+            --allow-hash-href \
+            --checks Links,Images,Scripts \
+            --ignore-empty-alt \
+            --no-enforce-https
