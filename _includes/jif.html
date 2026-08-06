@@ -11,10 +11,10 @@
     </p>
 
     <div class="gifField">
-      <label class="gifLabel" for="gifUrl">Tenor or Giphy link</label>
+      <label class="gifLabel" for="gifUrl">GIF link</label>
       <div class="gifRow">
         <input type="url" id="gifUrl" class="gifInput" spellcheck="false"
-               placeholder="https://media.tenor.com/… or a Giphy link"/>
+               placeholder="Tenor, Giphy, Klipy — or any direct GIF link"/>
         <button id="gifLoad" class="pollBtn gifBtnSm" type="button">Load</button>
       </div>
     </div>
@@ -57,7 +57,7 @@
     </div>
 
     <p class="gifHelpLink">
-      Tenor link not working? <button type="button" id="gifHelpOpen" class="gifLinkBtn">Here&rsquo;s the trick 🌱</button>
+      Link not working? <button type="button" id="gifHelpOpen" class="gifLinkBtn">Here&rsquo;s the trick 🌱</button>
     </p>
   </div>
 </section>
@@ -65,16 +65,17 @@
 <dialog id="gifHelp" class="gifDialog" aria-labelledby="gifHelpTitle">
   <h3 id="gifHelpTitle">Tenor needs one extra click</h3>
   <p class="gifDialogWhy">
-    Tenor won&rsquo;t let other websites read their pages, so the link from their share button
-    doesn&rsquo;t say where the actual GIF lives. Grabbing the GIF itself only takes a second:
+    <span id="gifHelpSite">Tenor</span> won&rsquo;t let other websites read their pages, so the link from
+    their share button doesn&rsquo;t say where the actual GIF lives. Grabbing the GIF itself only takes
+    a second:
   </p>
   <ol class="gifSteps">
-    <li>Open the GIF on <strong>tenor.com</strong>.</li>
+    <li>Open the GIF on <strong id="gifHelpDomain">tenor.com</strong>.</li>
     <li><strong>Right-click it</strong> &mdash; on a phone, press and hold.</li>
     <li>Choose <strong>&ldquo;Copy image address&rdquo;</strong> (Safari says &ldquo;Copy Image Link&rdquo;).</li>
-    <li>Paste it here. It&rsquo;ll start with <code>media.tenor.com</code>.</li>
+    <li>Paste it here. It&rsquo;ll start with <code id="gifHelpCdn">media.tenor.com</code>.</li>
   </ol>
-  <p class="gifDialogTip">
+  <p class="gifDialogTip" id="gifHelpTip">
     ✨ Don&rsquo;t worry if you grab a small one &mdash; we swap in the biggest version Tenor has.
   </p>
   <p class="gifDialogTip">
@@ -180,9 +181,11 @@
 
 <script type="module">
   /* Everything here runs in the visitor's browser. The GIF is fetched straight
-   * from Tenor's / Giphy's CDN, captioned on a canvas, re-encoded, and handed to
-   * the download bar. No okrafans server ever sees the file, because there isn't
-   * one — this page is static. */
+   * from whichever CDN is hosting it, captioned on a canvas, re-encoded, and
+   * handed to the download bar. No okrafans server ever sees the file, because
+   * there isn't one — this page is static. That also fixes what can and can't be
+   * supported: with no server to fetch on our behalf, a host either sends
+   * Access-Control-Allow-Origin or it is simply out of reach. */
   import { GIFEncoder, quantize, applyPalette } from "{{ '/assets/js/gifenc.js' | relative_url }}";
 
   const COLOURS = ["#ffffff", "#ffe234", "#ff4fd8", "#8bbf4d", "#ff5c39", "#5ac8fa"];
@@ -236,22 +239,60 @@
   const HANDLED = Symbol("handled");
 
   /* ---------- what did they paste? ---------- */
+  /* Media host = one that answers with Access-Control-Allow-Origin, which is the
+   * only thing that decides whether this page is allowed to read the bytes at all.
+   * Every host named here was checked by hand. Their *site* pages send no such
+   * header, hence the copy-image-address detour for a page link. */
   const isTenorPage  = u => /^https:\/\/(www\.)?tenor\.com\//i.test(u);
-  const isTenorMedia = u => /^https:\/\/media\d*\.tenor\.com\//i.test(u);
+  const isTenorMedia = u => /^https:\/\/(media\d*|c)\.tenor\.com\//i.test(u);
   const isGiphyPage  = u => /^https:\/\/(www\.)?giphy\.com\//i.test(u);
   const isGiphyMedia = u => /^https:\/\/(media\d*|i)\.giphy\.com\//i.test(u);
+  const isKlipyPage  = u => /^https:\/\/(www\.)?klipy\.com\//i.test(u);
+  const isKlipyMedia = u => /^https:\/\/static\d*\.klipy\.com\//i.test(u);
+
+  const creditFor = u =>
+    isTenorMedia(u) || isTenorPage(u) ? "Tenor"
+      : isGiphyMedia(u) || isGiphyPage(u) ? "Giphy"
+      : isKlipyMedia(u) || isKlipyPage(u) ? "Klipy" : "";
+
+  const hostOf = u => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return "That site"; } };
+
+  /* fetch won't say whether a failure was CORS or the network — deliberately, so
+   * that a page can't use it to probe other sites. Both arrive as a TypeError, so
+   * the message has to cover the likely cause without claiming to know. */
+  const loadFailed = (url, err) => err instanceof TypeError
+    ? new Error(`${hostOf(url)} doesn't let other websites read its files, so that one can't be captioned here. Tenor, Giphy, Klipy, Imgur and Tumblr all work.`)
+    : err;
+
+  /* What the help dialog says depends on which site sent them here. Both sites
+   * are shut equally tight — no CORS header on the page, and Klipy puts a
+   * Cloudflare challenge in front of item pages on top of that — so neither can
+   * ever be resolved from here, however the resolving is done. */
+  const HELP = {
+    Tenor: {
+      site: "Tenor", domain: "tenor.com", cdn: "media.tenor.com",
+      tip: "✨ Don’t worry if you grab a small one — we swap in the biggest version Tenor has.",
+    },
+    Klipy: {
+      site: "Klipy", domain: "klipy.com", cdn: "static.klipy.com",
+      tip: "✨ Klipy hands out .webp rather than .gif — that’s fine, we read those too.",
+    },
+  };
 
   /* Tenor puts the size in the media id's suffix, and "copy image address" hands
    * out AAAAM — 220px wide, and with frames dropped (one test GIF went 48 -> 16).
    * Same id, different suffix, so we just ask for a bigger one. Best first; the
    * loader falls through on a miss. Also normalises .mp4 / .webp addresses.
-   *   AAAAd ≈ full size    AAAAC ≈ 498px    AAAAM = 220px (what you get copying) */
+   *
+   * AAAAC is the big one, not AAAAd — measured on two animated GIFs, C came back
+   * 339x498 and 487x498 where d gave 254x373 and 365x373 for the same id. On
+   * stills the two are the same size and d is just compressed harder. So C leads. */
   function tenorCandidates(url) {
     const id = new URL(url).pathname.match(/\/(?:m\/)?([A-Za-z0-9_-]{11})AAA[A-Za-z0-9]{2}\//)?.[1];
     if (!id) return [url];
     return [
-      `https://media.tenor.com/${id}AAAAd/okrafans.gif`,
       `https://media.tenor.com/${id}AAAAC/okrafans.gif`,
+      `https://media.tenor.com/${id}AAAAd/okrafans.gif`,
       `https://media.tenor.com/${id}AAAAM/okrafans.gif`,
       url,
     ];
@@ -267,11 +308,19 @@
   }
 
   function candidatesFor(url) {
+    if (!/^https:\/\//i.test(url))
+      throw new Error("That should be a link starting with https:// — try copying it again.");
     if (isTenorMedia(url)) return tenorCandidates(url);
-    if (isGiphyMedia(url)) return [url];
+    if (isGiphyMedia(url) || isKlipyMedia(url)) return [url];
     if (isGiphyPage(url)) return giphyCandidates(url);
-    if (isTenorPage(url)) { openHelp(); throw HANDLED; }
-    throw new Error("Paste a link from Tenor or Giphy.");
+    if (isTenorPage(url)) { openHelp("Tenor"); throw HANDLED; }
+    if (isKlipyPage(url)) { openHelp("Klipy"); throw HANDLED; }
+    /* Anything else gets tried rather than refused. Whether it works comes down to
+     * one header we can't know without asking, and plenty of hosts do send it —
+     * Imgur, Tumblr, Discord, imgflip, Wikimedia and any site that just serves its
+     * own GIFs. When it isn't sent the fetch throws and loadFailed() explains why,
+     * which is far more use than turning the link away unread. */
+    return [url];
   }
 
   /* ---------- caption ---------- */
@@ -304,17 +353,47 @@
   }
 
   /* ---------- decode ---------- */
-  async function decode(buf) {
+  /* The first few bytes say what a file is far more reliably than its header does:
+   * hosts mislabel things as application/octet-stream, and Klipy's "copy image
+   * address" hands out a WebP from a page that called it a GIF. ImageDecoder is
+   * happy to take apart an animated WebP or APNG, so there's no reason to insist
+   * on GIF going in — only on GIF coming out. */
+  function sniff(buf) {
+    const b = new Uint8Array(buf, 0, Math.min(16, buf.byteLength));
+    const at = (i, s) => [...s].every((c, k) => b[i + k] === c.charCodeAt(0));
+    if (at(0, "GIF8")) return "image/gif";
+    if (at(0, "RIFF") && at(8, "WEBP")) return "image/webp";
+    if (b[0] === 0x89 && at(1, "PNG")) return "image/png";
+    return "";
+  }
+
+  /* A frame that asks for no delay is played at 100ms by every browser, and every
+   * frame of a Klipy GIF asks for exactly that — obeying it literally would play
+   * them back at 50fps. This is the same clamp Chrome and Firefox apply. */
+  const frameMs = us => { const ms = Math.round((us ?? 0) / 1000); return ms <= 10 ? 100 : ms; };
+
+  async function decode(buf, headerType) {
     /* Safari has never shipped ImageDecoder, and every iOS browser is Safari
      * underneath — so don't send iPhone users off to install Chrome, it's the
      * same engine and it won't help either. */
     if (!("ImageDecoder" in window))
       throw new Error("Safari can't take GIFs apart, so this doesn't work on iPhone or iPad yet — try Chrome, Edge or Firefox on Android or a computer.");
-    const dec = new ImageDecoder({ data: buf, type: "image/gif" });
+    const type = sniff(buf) || headerType || "";
+    /* Klipy plays the video version on its pages, so "copy video address" is an
+     * easy slip to make there and worth naming rather than shrugging at. */
+    if (!type || !(await ImageDecoder.isTypeSupported(type)))
+      throw new Error(
+        /^video\//.test(type) ? "That's the video version, which can't be captioned here — copy the image address instead, the one ending in .gif or .webp."
+        : /^text\//.test(type) ? "That link opens a web page, not the GIF itself — open it, right-click the GIF and copy the image address."
+        : "That link isn't a picture this browser knows how to open.");
+    const dec = new ImageDecoder({ data: buf, type });
     await dec.tracks.ready;              /* selectedTrack is null before this */
     await dec.completed;                 /* every frame buffered, so the count is final */
     const n = dec.tracks.selectedTrack.frameCount;
-    if (n < 2) throw new Error("That one's a still image, not an animation — pick another.");
+    /* Tenor's search grid shows a still preview until you hover, so copying the
+     * image address off it lands here more often than you'd think — say what to do
+     * about it rather than just "pick another". */
+    if (n < 2) throw new Error("That one's a still picture, not an animation — if you copied it off a search page, open the GIF itself first and copy it again.");
 
     /* Every frame is held as a full bitmap for as long as the GIF is loaded, so a
      * long one is what actually runs a phone out of memory (a 248-frame 462x500
@@ -331,7 +410,7 @@
           resizeHeight: Math.max(1, Math.round(image.displayHeight * scale)),
           resizeQuality: "high",
         }),
-        ms: Math.max(20, Math.round((image.duration ?? 100000) / 1000)) * step,
+        ms: frameMs(image.duration) * step,
       });
       image.close();
       if (k % 8 === 7) { tick(`Taking it apart… ${Math.round(i / n * 100)}%`); await breathe(); }
@@ -501,12 +580,20 @@
   }
 
   /* ---------- help dialog ---------- */
-  function openHelp() {
+  function openHelp(which = "Tenor") {
+    const h = HELP[which] ?? HELP.Tenor;
+    $("gifHelpTitle").textContent = `${h.site} needs one extra click`;
+    $("gifHelpSite").textContent = h.site;
+    $("gifHelpDomain").textContent = h.domain;
+    $("gifHelpCdn").textContent = h.cdn;
+    $("gifHelpTip").textContent = h.tip;
     const d = $("gifHelp");
     if (typeof d.showModal === "function") d.showModal();
     else d.setAttribute("open", "");        /* very old browsers: inline, still readable */
   }
-  $("gifHelpOpen").addEventListener("click", openHelp);
+  /* The standing link under the panel is the Tenor one — that's the link people
+   * paste wrong most often. A click event is not a host name, hence the wrapper. */
+  $("gifHelpOpen").addEventListener("click", () => openHelp("Tenor"));
 
   /* ---------- actions ---------- */
   $("gifLoad").addEventListener("click", async () => {
@@ -518,23 +605,25 @@
       const candidates = candidatesFor(url);
 
       /* Best quality first, falling back to whatever Tenor actually has. */
-      let buf = null, lastErr = null;
+      let buf = null, type = "", lastErr = null;
       for (const candidate of candidates) {
         try {
           const res = await fetch(candidate);
-          if (!res.ok) { lastErr = new Error(`That GIF wouldn't download (${res.status}).`); continue; }
+          if (!res.ok) { lastErr = new Error(`That link didn't work — the site answered ${res.status}.`); continue; }
+          type = (res.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
           buf = await res.arrayBuffer();
           break;
-        } catch (e) { lastErr = e; }
+        } catch (e) { lastErr = loadFailed(candidate, e); }
       }
-      if (!buf) throw lastErr ?? new Error("That GIF wouldn't download.");
+      if (!buf) throw lastErr ?? new Error("That one wouldn't download.");
 
       announce("Taking it apart…");
-      state.frames = await decode(buf);
+      state.frames = await decode(buf, type);
       state.w = state.frames[0].bitmap.width;
       state.h = state.frames[0].bitmap.height;
 
-      $("gifCredit").textContent = isTenorMedia(url) ? "via Tenor" : "";
+      const credit = creditFor(url);
+      $("gifCredit").textContent = credit ? `via ${credit}` : "";
       $("gifControls").hidden = false;
       preview();
       announce("");
