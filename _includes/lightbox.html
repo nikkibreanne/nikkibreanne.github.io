@@ -5,7 +5,12 @@
   <button id="lbNext"  class="lbBtn lbNext"  aria-label="Next">&#8250;</button>
   <div class="lbScroll">
     <figure class="lbFigure" role="dialog" aria-modal="true" aria-label="Meme viewer">
-      <img id="lbImg" src="" alt=""/>
+      <!-- A 1x1 transparent GIF rather than src="": an empty src is an old
+           browser footgun (some treat it as "re-request the current page") and
+           link checkers flag it. The lightbox is display:none until .open and
+           the script sets the real src before showing it, so this pixel never
+           actually renders. -->
+      <img id="lbImg" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt=""/>
       <figcaption class="lbCap">
         <span id="lbCaption"></span>
         <span id="lbStream" class="memeStream"></span>
