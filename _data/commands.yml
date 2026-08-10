@@ -3,8 +3,49 @@
 # registry (kennyBot/src/commands/registry.js). `sub: true` = subscriber-only;
 # a group with `mod: true` = moderator commands. desc may contain simple HTML
 # (use single-quoted attributes so the YAML stays double-quoted).
-- group: "Your raider"
-  blurb: "Grow a little hero in chat and gear it up."
+- group: "Clips"
+  blurb: "Catch a moment as it happens. Anyone can use this."
+  commands:
+    - cmd: "!clip"
+      desc: "Save the last ~60 seconds of stream. Type it just <em>after</em> the moment rather than during, and kennyBot confirms in chat once it has it — when Twitch clipping is switched on it posts the link too. One clip per person per minute."
+
+- group: "Around the stream"
+  blurb: "Odds and ends kennyBot keeps track of during a stream."
+  commands:
+    - cmd: "!timer"
+      aliases: "!countdown"
+      desc: "How long is left on the stream timer &mdash; the countdown a mod sets for a break, an intermission, or &ldquo;starting in 5&rdquo;. Anyone can ask; kennyBot also calls out the last few minutes and announces when it&rsquo;s up. Setting it is a mod control."
+    - cmd: "!fact"
+      args: "[#]"
+      aliases: "!facts"
+      desc: "A random Nikki fun fact. <code>!fact &lt;#&gt;</code> pulls up the one with that number on the <a href='/info/'>fun facts page</a>, and <code>!fact suggest &lt;text&gt;</code> proposes a new one for approval."
+    - cmd: "!kennycommands"
+      aliases: "!kennybot, !kcommands"
+      desc: "This list."
+
+- group: "Credits & the OKRAMARKET"
+  blurb: "Fun-money you earn by hanging out, then wager on predictions. No pay-to-win — credits can't be bought, only earned."
+  commands:
+    - cmd: "!credits"
+      aliases: "!points, !bal, !balance"
+      desc: "Check your credit balance."
+    - cmd: "!daily"
+      desc: "Claim your daily credit allowance (your first-ever claim also drops a starter grubstake)."
+    - cmd: "!bet"
+      args: "<market#> <yes|no> <amount>"
+      aliases: "!wager"
+      desc: "Wager credits YES or NO on a market (the number targets it — see <code>!market</code>). You back one side; betting again on it adds to your stake. Winners split the whole pool proportional to their stake (parimutuel — no rake). If only one market is open you can skip the number: <code>!bet yes 100</code>."
+    - cmd: "!market"
+      desc: "List the open markets — several can run at once — with the YES/NO credit pool on each. Every market also takes a <strong>free</strong> community vote on the site (no credits)."
+    - cmd: "!market suggest"
+      args: "<question>"
+      desc: "Propose a YES/NO market — e.g. <code>!market suggest Will we clear the boss tonight?</code>. A mod reviews it before it goes live."
+    - cmd: "!duel"
+      args: "<@user> <amount>"
+      desc: "Challenge another viewer to a coin-flip duel for credits. They reply <code>!duel accept</code> or <code>!duel deny</code>; on accept both stake the wager and the winner takes the whole pot. Expires in 3 minutes."
+
+- group: "Raid game · your raider"
+  blurb: "The channel’s chat RPG. Grow a little hero while you hang out, and gear it up."
   commands:
     - cmd: "!create"
       args: "<class>"
@@ -30,7 +71,7 @@
       args: "@user <item|#> [+ credits]"
       desc: "Propose a real SWAP. You put up an item (by <code>!bag</code> number or name) and/or credits; the other player must put something up in return with <code>!trade counter &lt;their item # or credits&gt;</code> before it can go through — a bare <code>!trade accept</code> with nothing on their side is refused. Countering flips it back to you to <code>!trade accept</code>, counter again, or <code>!trade decline</code>. Each side only stakes from its own bag, offers expire after 5 minutes, and the swap is all-or-nothing. (Just want to give something away? Use <code>!offer</code>.)"
 
-- group: "Loot & raids"
+- group: "Raid game · loot & raids"
   blurb: "Chat loot drops, the weekly boss, and the leaderboard."
   commands:
     - cmd: "!grab"
@@ -44,49 +85,9 @@
       args: "[damage]"
       desc: "The season leaderboard — the patch's top 5 hardest hitters."
 
-- group: "Credits & the OKRAMARKET"
-  blurb: "Fun-money you earn by hanging out, then wager on predictions. No pay-to-win — credits can't be bought, only earned."
-  commands:
-    - cmd: "!credits"
-      aliases: "!points, !bal, !balance"
-      desc: "Check your credit balance."
-    - cmd: "!daily"
-      desc: "Claim your daily credit allowance (your first-ever claim also drops a starter grubstake)."
-    - cmd: "!bet"
-      args: "<market#> <yes|no> <amount>"
-      aliases: "!wager"
-      desc: "Wager credits YES or NO on a market (the number targets it — see <code>!market</code>). You back one side; betting again on it adds to your stake. Winners split the whole pool proportional to their stake (parimutuel — no rake). If only one market is open you can skip the number: <code>!bet yes 100</code>."
-    - cmd: "!market"
-      desc: "List the open markets — several can run at once — with the YES/NO credit pool on each. Every market also takes a <strong>free</strong> community vote on the site (no credits)."
-    - cmd: "!market suggest"
-      args: "<question>"
-      desc: "Propose a YES/NO market — e.g. <code>!market suggest Will we clear the boss tonight?</code>. A mod reviews it before it goes live."
-    - cmd: "!duel"
-      args: "<@user> <amount>"
-      desc: "Challenge another viewer to a coin-flip duel for credits. They reply <code>!duel accept</code> or <code>!duel deny</code>; on accept both stake the wager and the winner takes the whole pot. Expires in 3 minutes."
-
-- group: "Clips"
-  blurb: "Catch a moment as it happens — no raider needed, anyone can use this."
-  commands:
-    - cmd: "!clip"
-      desc: "Save the last ~60 seconds of stream. Type it just <em>after</em> the moment rather than during, and kennyBot confirms in chat once it has it — when Twitch clipping is switched on it posts the link too. One clip per person per minute."
-
-- group: "Facts & meta"
-  commands:
-    - cmd: "!timer"
-      aliases: "!countdown"
-      desc: "How long is left on the stream timer &mdash; the countdown a mod sets for a break, an intermission, or &ldquo;starting in 5&rdquo;. Anyone can ask; kennyBot also calls out the last few minutes and announces when it&rsquo;s up. Setting it is a mod control."
-    - cmd: "!fact"
-      args: "[#]"
-      aliases: "!facts"
-      desc: "A random Nikki fun fact. <code>!fact &lt;#&gt;</code> pulls up the one with that number on the <a href='/info/'>fun facts page</a>, and <code>!fact suggest &lt;text&gt;</code> proposes a new one for approval."
-    - cmd: "!kennycommands"
-      aliases: "!kennybot, !kcommands"
-      desc: "This list."
-
 - group: "Mod tools"
   mod: true
-  blurb: "For moderators running the show — not needed to play."
+  blurb: "For moderators running the show. Nobody else needs these."
   commands:
     - cmd: "!market"
       args: "open <question> | close <#> | resolve <#> <yes|no> | cancel <#>"
