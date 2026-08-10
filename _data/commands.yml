@@ -73,6 +73,9 @@
 
 - group: "Facts & meta"
   commands:
+    - cmd: "!timer"
+      aliases: "!countdown"
+      desc: "How long is left on the stream timer &mdash; the countdown a mod sets for a break, an intermission, or &ldquo;starting in 5&rdquo;. Anyone can ask; kennyBot also calls out the last few minutes and announces when it&rsquo;s up. Setting it is a mod control."
     - cmd: "!fact"
       args: "[#]"
       aliases: "!facts"
@@ -118,6 +121,13 @@
     - cmd: "!fact"
       args: "pending | approve <#> | reject <#>"
       desc: "Review the viewer fact suggestions from <code>!fact suggest</code> — approving one publishes it straight to the <a href='/info/'>fun facts page</a>."
+    - cmd: "!reminder"
+      args: "on|off|test <id> | at <id> <times> | every|after <id> <min>"
+      aliases: "!reminders"
+      desc: "The recurring nudges kennyBot posts on stream &mdash; the Wallpaper Engine check 30 minutes in, Ghosty&rsquo;s meal times with a heads-up beforehand, and an hourly hydration ping. A bare <code>!reminder</code> lists them all with what fires when. Every schedule is stored in the database, so re-timing one from chat (<code>!reminder at ghosty 09:00 18:00</code>) sticks &mdash; and survives updates to the bot. Also takes <code>lead</code>, <code>jitter</code>, <code>text</code>, <code>leadtext</code>, <code>zone</code> and <code>channel</code>. They only fire while the stream is live; a slot missed while offline is skipped rather than announced late."
+    - cmd: "!timer"
+      args: "<duration> [label] | +5 | -2m | pause | resume | stop"
+      desc: "Set the stream countdown &mdash; e.g. <code>!timer 10 Coffee break</code>. A bare number is minutes; <code>90s</code>, <code>45m</code>, <code>1h30m</code> and <code>5:30</code> all work too, and the words after it become the label. <code>!timer +5</code> / <code>!timer -2m</code> add or remove time without restarting it, and <code>pause</code> / <code>resume</code> / <code>stop</code> do what they say. kennyBot posts a heads-up at 5 minutes and 1 minute, then calls time. Only one timer runs at a time (setting another replaces it), and it survives a bot restart. Anyone can check it with a bare <code>!timer</code>."
     - cmd: "!todo"
       args: "add [date] <text> | remove <#> | list"
       aliases: "!todos"
