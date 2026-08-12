@@ -13,9 +13,14 @@
 #      date: 2026-06-14                     # YYYY-MM-DD, controls order
 # ===========================================================
 
+- image: assets/memes/ghost-vs-alliance.jpg
+  caption: "world first — Ghost downs the alliance ⚔️🐺"
+  stream: the vault
+  date: 2026-08-12
+
 - image: assets/memes/nikki-asylum-album.jpg
   full: assets/memes/nikki-asylum-album-full.jpg
-  caption: "NIKKI ASYLUM — Nikki, Grace & Leon's emo punk rock album 🦇🥀"
+  caption: "NIKKI ASYLUM — Nikki, G̶r̶a̶c̶e̶ & Leon's emo punk rock album 🦇🥀"
   stream: the vault
   date: 2026-06-21
 
