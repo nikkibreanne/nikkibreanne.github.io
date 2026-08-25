@@ -8,7 +8,13 @@
     <p class="cmpIntro">
       🎒 Every piece of gear in the okra-patch raid game &mdash; filter, sort, and
       pin items to <strong>compare their stats side by side</strong>.
-      <small>Each item boosts <em>one</em> role&rsquo;s rating; win it as loot with <code>!loot</code> on a drop, then <code>!equip</code> it.</small>
+      <small>
+        Each item serves <em>one</em> role, and <strong>only that role&rsquo;s classes can equip it</strong> &mdash;
+        gear for another role does nothing, so pass it on with <code>!give</code> or <code>!trade</code>.
+        Win gear by <code>!grab</code>bing a chat drop, or from a cleared raid.<br/>
+        <strong>Matched Set:</strong> fill all three slots with gear your role can wear and you earn a bonus
+        set by your <em>weakest</em> piece &mdash; so upgrading your worst slot is always the best move.
+      </small>
     </p>
 
     <!-- Pinned compare tray (up to 4). Hidden until you pin something. -->
@@ -79,12 +85,19 @@
             <th>Slot</th>
             <th>Rarity</th>
             <th>Role</th>
+            <th>Wearable by</th>
+            <th>Set tier</th>
             <th class="cmpStatCol">Stat</th>
           </tr>
         </thead>
-        <tbody id="cmpBody"><tr><td colspan="7" class="cmpEmpty">Loading the loot table&hellip;</td></tr></tbody>
+        <tbody id="cmpBody"><tr><td colspan="9" class="cmpEmpty">Loading the loot table&hellip;</td></tr></tbody>
       </table>
     </div>
+    <p class="gameNote">
+      <strong>Set tier</strong> is what a piece anchors a Matched Set at: fill weapon, armor and trinket with
+      gear your role can wear and you gain that % of your gear rating, decided by your <em>weakest</em> equipped
+      piece. Three commons is +2%; three legendaries is +15%. An empty slot means no set bonus at all.
+    </p>
     <p id="cmpNote" class="gameNote"></p>
   </div>
 </section>
@@ -142,6 +155,8 @@
   .rar-epic { color: #9b3fd4; }
   .rar-legendary { color: #d67c1a; }
   .cmpRole { display: inline-block; padding: 0.1em 0.5em; border-radius: 0.8em; font-size: 0.78em; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 0.02em; }
+  .cmpClasses { font-size: 0.86em; opacity: 0.85; }
+  .cmpSet { font-size: 0.9em; font-weight: 700; white-space: nowrap; }
   .role-tank { background: #2e6fd6; }
   .role-healer { background: #3a9d23; }
   .role-dps { background: #d64545; }
@@ -181,6 +196,29 @@
   const esc = (s) => { const d = document.createElement("div"); d.textContent = (s == null ? "" : String(s)); return d.innerHTML; };
   const cap = (s) => String(s || "").charAt(0).toUpperCase() + String(s || "").slice(1);
   const statOf = (it) => (it && it.bonuses && it.role && it.bonuses[it.role]) || 0;
+
+  /*
+   * Which classes can equip a given role's gear. Mirrors CLASSES in kennyBot's
+   * src/content/classes.js: a class fixes its role at !create, so this is
+   * derived from the item's role rather than stored on every item.
+   */
+  const CLASSES_BY_ROLE = {
+    tank: ["Guardian"],
+    healer: ["Mender"],
+    dps: ["Berserker", "Arcanist", "Ranger"],
+  };
+  const classesFor = (role) => (CLASSES_BY_ROLE[role] || []).join(", ") || "—";
+
+  /*
+   * Matched Set bonus: a % of your gear rating once all three slots hold gear
+   * your role can wear, tiered by the WEAKEST piece. Mirrors
+   * config.rating.setBonusPct in kennyBot — keep the two in step.
+   */
+  const SET_BONUS_PCT = { common: 2, uncommon: 4, rare: 7, epic: 10, legendary: 15 };
+  const setLabel = (rarity) => {
+    const pct = SET_BONUS_PCT[rarity];
+    return pct ? "+" + pct + "%" : "—";
+  };
 
   const els = {
     body: document.getElementById("cmpBody"),
@@ -238,6 +276,8 @@
       '<td>' + cap(it.slot) + '</td>' +
       '<td><span class="cmpRarity rar-' + esc(it.rarity) + '">' + cap(it.rarity) + '</span></td>' +
       '<td><span class="cmpRole role-' + esc(it.role) + '">' + esc(it.role) + '</span></td>' +
+      '<td class="cmpClasses">' + esc(classesFor(it.role)) + '</td>' +
+      '<td class="cmpSet"><span class="rar-' + esc(it.rarity) + '">' + setLabel(it.rarity) + '</span></td>' +
       '<td class="cmpStat">+' + statOf(it) + '</td>' +
     '</tr>';
   }
@@ -247,7 +287,7 @@
     els.count.textContent = "Showing " + rows.length + " of " + ALL.length + " items";
     els.body.innerHTML = rows.length
       ? rows.map(rowHtml).join("")
-      : '<tr><td colspan="7" class="cmpEmpty">No gear matches those filters.</td></tr>';
+      : '<tr><td colspan="9" class="cmpEmpty">No gear matches those filters.</td></tr>';
     els.body.querySelectorAll(".cmpPin").forEach((btn) =>
       btn.addEventListener("click", () => togglePin(btn.dataset.id)));
   }
@@ -260,6 +300,8 @@
       '<div class="cmpCardRow"><span>Slot</span><b>' + cap(it.slot) + '</b></div>' +
       '<div class="cmpCardRow"><span>Rarity</span><b class="rar-' + esc(it.rarity) + '">' + cap(it.rarity) + '</b></div>' +
       '<div class="cmpCardRow"><span>Role</span><b>' + esc(it.role) + '</b></div>' +
+      '<div class="cmpCardRow"><span>Wearable by</span><b>' + esc(classesFor(it.role)) + '</b></div>' +
+      '<div class="cmpCardRow"><span>Set tier</span><b class="rar-' + esc(it.rarity) + '">' + setLabel(it.rarity) + '</b></div>' +
       '<p class="cmpCardStat rar-' + esc(it.rarity) + '">+' + statOf(it) + ' ' + esc(it.role) + '</p>' +
     '</div>';
   }
