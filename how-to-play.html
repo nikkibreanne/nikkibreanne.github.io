@@ -35,7 +35,7 @@ game: how-to-play
       </li>
       <li class="htpStep">
         <span class="htpStepTitle">Level up &amp; gear up ⚒️</span>
-        <small>Fill the EXP bar to level up and get stronger. When loot drops in chat, <code>!grab</code> to enter the draw, then <code>!equip</code> what you win into your weapon, armor, and trinket slots.</small>
+        <small>Fill the EXP bar to level up and get stronger. When loot drops in chat, <code>!grab</code> to enter the draw, then <code>!equip</code> what you win into your weapon, armor, and trinket slots. Gear only works for <strong>its own role</strong> &mdash; if it isn&rsquo;t for yours, hand it to someone it helps with <code>!give</code>.</small>
       </li>
       <li class="htpStep">
         <span class="htpStepTitle">Muster the patch 📣</span>
@@ -47,9 +47,46 @@ game: how-to-play
       </li>
       <li class="htpStep">
         <span class="htpStepTitle">Watch, loot, climb 🏆</span>
-        <small>Watch the replay in the <a href="{{ '/arena/' | relative_url }}">Arena</a>, see whether the patch prevailed, and check where your damage landed on the <a href="{{ '/leaderboard/' | relative_url }}">Leaderboard</a>. Then it all begins again next week.</small>
+        <small>Watch the replay in the <a href="{{ '/arena/' | relative_url }}">Arena</a> and check where your damage landed on the <a href="{{ '/leaderboard/' | relative_url }}">Leaderboard</a>. <strong>If the boss goes down, every hero on the roster gets a piece of gear</strong> &mdash; it lands straight in your <code>!bag</code>. Then it all begins again next week.</small>
       </li>
     </ol>
+  </div>
+
+  <div class="htpPanel">
+    <h3>🎒 WHERE GEAR COMES FROM</h3>
+    <p class="htpIntro">Two ways, and they work differently. Everything you own lives in your <code>!bag</code> until you <code>!equip</code> it.</p>
+    <ol class="htpSteps">
+      <li class="htpStep">
+        <span class="htpStepTitle">Chat drops &mdash; a draw anyone can enter 🎲</span>
+        <small>
+          An item drops into chat now and then while Nikki&rsquo;s live, and whenever someone cheers bits.
+          kennyBot announces it by name, <strong>everyone has 60 seconds to <code>!grab</code></strong>, and when the
+          window closes <strong>one entrant is drawn at random</strong> and gets it. Every entrant has identical
+          odds &mdash; sub tier buys no loot luck. Bigger cheers can&rsquo;t buy you the item, but they do
+          raise how good it is for whoever wins it.
+        </small>
+      </li>
+      <li class="htpStep">
+        <span class="htpStepTitle">Raid rewards &mdash; automatic, for showing up ⚔️</span>
+        <small>
+          <strong>Clear the weekly boss and every hero on the roster gets one piece of gear</strong>, in their own
+          role, straight into their bag. There is nothing to type and nothing to win &mdash; it happens when the
+          battle resolves, whether you were watching or not. Surviving the fight improves what you can get,
+          and the MVP gets the best odds of all. A wipe pays nothing.
+        </small>
+      </li>
+    </ol>
+    <p class="htpAside">💡 Browse everything that can drop in the <a href="{{ '/items/' | relative_url }}">Item Compendium</a> &mdash; it lists which classes can wear each piece.</p>
+  </div>
+
+  <div class="htpPanel">
+    <h3>🛡️ GEAR ONLY WORKS FOR ITS OWN ROLE</h3>
+    <p class="htpIntro">The single most common mix-up &mdash; worth thirty seconds of your time.</p>
+    <ul class="htpNotes">
+      <li><strong>Every item serves exactly one role.</strong> A tank&rsquo;s breastplate does nothing for a healer, and a healer&rsquo;s scepter does nothing for a damage-dealer. <code>!equip</code> will tell you rather than let you wear something useless.</li>
+      <li><strong>Your class fixes your role.</strong> <strong>Guardian</strong> is the tank. <strong>Mender</strong> is the healer. <strong>Berserker</strong>, <strong>Arcanist</strong> and <strong>Ranger</strong> all deal damage, and share the same gear.</li>
+      <li><strong>Off-role loot isn&rsquo;t wasted &mdash; it&rsquo;s currency.</strong> <code>!bag</code> marks anything you can&rsquo;t use with ⛔. Pass it to someone who can with <code>!give @user &lt;#&gt;</code>, or swap for something you need with <code>!trade @user &lt;#&gt;</code>. The patch gears up faster when gear moves.</li>
+    </ul>
   </div>
 
   <div class="htpPanel">
@@ -68,11 +105,11 @@ game: how-to-play
       </li>
       <li class="cmdRow">
         <div class="cmdSyntax"><code>!bag</code> <span class="cmdAlias">also: !inventory, !inv</span></div>
-        <div class="cmdDesc">Peek at your unequipped loot — everything you&rsquo;ve grabbed but aren&rsquo;t wearing yet.</div>
+        <div class="cmdDesc">Peek at your unequipped loot — everything you&rsquo;ve grabbed but aren&rsquo;t wearing yet. Anything your role can&rsquo;t use is marked ⛔.</div>
       </li>
       <li class="cmdRow">
         <div class="cmdSyntax"><code>!equip &lt;item&gt;</code></div>
-        <div class="cmdDesc">Wear an item from your bag — it slots into its weapon, armor, or trinket spot automatically.</div>
+        <div class="cmdDesc">Wear an item from your bag — it slots into its weapon, armor, or trinket spot automatically. Gear for another role is refused (it would do nothing) and kennyBot tells you which class it&rsquo;s for.</div>
       </li>
       <li class="cmdRow">
         <div class="cmdSyntax"><code>!unequip &lt;slot|item&gt;</code></div>
@@ -81,6 +118,14 @@ game: how-to-play
       <li class="cmdRow cmdSub">
         <div class="cmdSyntax"><code>!grab</code> <span class="subTag">subs</span> <span class="cmdAlias">also: !loot</span></div>
         <div class="cmdDesc">Enter the drawing for the active loot drop while the window&rsquo;s open. One winner is drawn when it closes — the item goes to them. 🎲</div>
+      </li>
+      <li class="cmdRow">
+        <div class="cmdSyntax"><code>!give @user &lt;item|#&gt;</code> <span class="cmdAlias">also: !offer, !gift</span></div>
+        <div class="cmdDesc">Hand an item (or credits) to someone else — they reply <code>!offer accept</code> to take it. The tidy way to move gear your role can&rsquo;t use.</div>
+      </li>
+      <li class="cmdRow">
+        <div class="cmdSyntax"><code>!trade @user &lt;item|#&gt;</code></div>
+        <div class="cmdDesc">Propose a swap — they counter with what they&rsquo;re putting up, then either side accepts or declines.</div>
       </li>
       <li class="cmdRow cmdSub">
         <div class="cmdSyntax"><code>!muster</code> <span class="subTag">subs to muster</span></div>
@@ -100,7 +145,9 @@ game: how-to-play
       <li><strong>EXP only grows while live.</strong> Your hero earns EXP from chatting <em>only</em> when the channel is actually live — off-stream messages don&rsquo;t count.</li>
       <li><strong>Leveling is steady, not lucky.</strong> Each level needs a fixed EXP bar to fill; once it&rsquo;s full, your level-up lands within a few guaranteed messages. There&rsquo;s no random jackpot and no bad-luck streak — fill the bar, get the level.</li>
       <li><strong>Higher sub tiers hit harder.</strong> A higher subscription tier boosts both how fast your hero earns EXP and its combat power on raid night.</li>
-      <li><strong>Loot is a fair draw.</strong> Every entrant — and every subscriber tier — has the exact same odds of winning the drawing; no tier gets better loot luck than another.</li>
+      <li><strong>Chat drops are a fair draw.</strong> Every entrant — and every subscriber tier — has the exact same odds of winning the drawing; no tier gets better loot luck than another.</li>
+      <li><strong>Raid rewards need no luck at all.</strong> Clear the boss and everyone on the roster is paid, automatically, in their own role. Mustering is the whole requirement.</li>
+      <li><strong>Bits make drops better, not likelier to be yours.</strong> A cheer of 500+ bits pops a drop for the whole chat, and the bigger the cheer the higher the guaranteed rarity floor. It&rsquo;s still an open draw — the cheerer gets no edge.</li>
     </ul>
   </div>
 
@@ -109,6 +156,10 @@ game: how-to-play
     <div class="htpFaq">
       <p class="htpFaqQ">I&rsquo;m subscribed but I&rsquo;m not gaining EXP — what gives?</p>
       <p class="htpFaqA">EXP only accrues while the stream is <strong>live</strong>. If the channel is offline, your messages won&rsquo;t feed your hero — pop back in once Nikki&rsquo;s live. 🌱</p>
+      <p class="htpFaqQ">I equipped something and my rating didn&rsquo;t move. Why?</p>
+      <p class="htpFaqA">It was almost certainly gear for a <strong>different role</strong> — that&rsquo;s worth nothing to you no matter how rare it is. <code>!equip</code> now refuses it outright and tells you which class it&rsquo;s for, and <code>!bag</code> marks it ⛔. Pass it on with <code>!give</code>. 🎁</p>
+      <p class="htpFaqQ">Something appeared in my bag and I never grabbed anything.</p>
+      <p class="htpFaqA">You were on the roster for a raid that <strong>won</strong>. Every hero who mustered gets one piece of gear when the boss goes down — no typing, no draw. Surviving the fight (and being MVP) improves what you can get. ⚔️</p>
       <p class="htpFaqQ">My sub lapsed. Did I lose my hero?</p>
       <p class="htpFaqA">Nope! Your hero, level, and gear are all kept, and you keep earning EXP from chatting while live. You&rsquo;ll just need to re-sub to <strong>create a new hero</strong> or to <strong>muster for a raid</strong> with <code>!muster</code>.</p>
     </div>

@@ -57,7 +57,37 @@ so the page is demonstrable now. A "replay from start" control re-watches.
 Both degrade to a labeled **PREVIEW** demo when Firebase is unreachable/empty, so
 local preview works even offline.
 
-**Still to build:** gear/inventory detail view, leaderboard, season banner.
+**`/items/` — the Item Compendium** (`_includes/items.html`). The whole gear
+catalog, filterable by role / slot / rarity / set, sortable, with up to four
+items pinned for side-by-side comparison. Reads Firebase `items/` when it can and
+falls back to the build-time snapshot in `_data/items.json`.
+
+**Still to build:** per-hero inventory detail view, season banner.
+
+### 2a. The gear contract (keep in step with kennyBot)
+
+Two facts the UI must state, because getting them wrong is what confuses players:
+
+1. **Gear serves exactly one role, and only that role's classes can equip it.**
+   An item's rating comes from `bonuses[wearer.role]`, so off-role gear is worth
+   zero — kennyBot now refuses the equip outright. The Compendium therefore
+   carries a **"Wearable by"** column derived from the item's `role`
+   (tank→Guardian · healer→Mender · dps→Berserker/Arcanist/Ranger). That mapping
+   mirrors `CLASSES` in kennyBot's `src/content/classes.js`; if a class is ever
+   added there, update `CLASSES_BY_ROLE` in `_includes/items.html` to match.
+2. **Gear arrives by two different routes**, and they behave differently:
+   *chat drops* are an open 60s lottery (`!grab` enters, one random winner), while
+   *raid rewards* are automatic — clearing the weekly boss pays every hero on the
+   roster one item in their own role, with surviving and MVP raising the rarity
+   floor. `/how-to-play/` is the canonical player-facing explanation of both;
+   don't restate the rules elsewhere, link to it.
+
+`_data/items.json` is a **generated** file — never hand-edit it. Regenerate from
+kennyBot after any catalog change:
+
+```
+node scripts/export-catalog.mjs > ../nikkibreanne.github.io/_data/items.json
+```
 
 Compose as `_includes/*.html` into pages, the same way `index.html` composes
 `poll.html` etc. The "take me home" banner now lives beneath the meme wall on the
