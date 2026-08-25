@@ -82,6 +82,25 @@ Two facts the UI must state, because getting them wrong is what confuses players
    floor. `/how-to-play/` is the canonical player-facing explanation of both;
    don't restate the rules elsewhere, link to it.
 
+Two more contracts the UI must not drift from:
+
+3. **Enlistment is SEASON-LONG.** `!muster` once and the hero is on the roster
+   for every remaining week — `setupRaidWeek` carries signups forward within a
+   season; only week 1 of a new season starts empty. Never phrase muster as a
+   weekly signup anywhere on the site.
+4. **Leaderboards are PER ROLE.** `leaderboard/<seasonId>/<uid>` now holds
+   `{ damage, healing, taken, role, raids }`. Each role is ranked on its own
+   metric (dps→damage, healer→healing, tank→taken), mirroring `ROLE_METRIC` in
+   kennyBot's `src/db/leaderboard.js`. Entries with no `role` are from seasons
+   recorded before this and fall back to the old combined damage board.
+   `taken` deliberately excludes AoE, which hits everyone equally and so ranks
+   nobody.
+
+The Compendium also shows a **Set tier** column: filling all three slots with
+usable gear grants a % of gear rating, tiered by the *weakest* piece. That table
+mirrors `config.rating.setBonusPct` — keep `SET_BONUS_PCT` in
+`_includes/items.html` in step with it.
+
 `_data/items.json` is a **generated** file — never hand-edit it. Regenerate from
 kennyBot after any catalog change:
 

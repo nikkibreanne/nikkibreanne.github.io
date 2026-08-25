@@ -80,10 +80,19 @@
       desc: "Enter the drawing for the active loot drop. One winner is drawn when the window closes and gets the item. 🎲"
     - cmd: "!muster"
       sub_note: "subs to enlist"
-      desc: "During the signup window, enlist your hero in this week's raid (subscribers). Any time, it reports the current raid status and links you to the action."
+      desc: "Enlist your hero for the SEASON (subscribers) — once, not weekly. You stay on the roster for every week until the season ends; a new season starts everyone fresh. Any time, it reports the current raid status and links you to the action."
+    - cmd: "!salvage"
+      args: "<item|#> [confirm]"
+      aliases: "!melt"
+      desc: "Melt an item into credits, priced by rarity. <code>!salvage offrole</code> clears everything your role cannot wear in one pass. Epic and better need an explicit <code>confirm</code>. It pays less than the piece is worth to a hero who CAN use it — giving it away with <code>!give</code> is always the better deal."
+    - cmd: "!respec"
+      args: "<class>"
+      sub: true
+      aliases: "!reclass"
+      desc: "Change class, and with it your battlefield role, for credits. Level, EXP and renown are kept; equipped gear returns to your bag (to trade or salvage) and a fresh starter set for the new role is equipped."
     - cmd: "!top"
       args: "[damage]"
-      desc: "The season leaderboard — the patch's top 5 hardest hitters."
+      desc: "The season leaderboard — ONE BOARD PER ROLE, each measured on its own job: <code>!top dps</code> ranks boss damage, <code>!top healer</code> ranks healing done, <code>!top tank</code> ranks damage soaked. A bare <code>!top</code> shows the damage board."
 
 - group: "Mod tools"
   mod: true
