@@ -87,8 +87,39 @@ game: how-to-play
       <li><strong>Your class fixes your role.</strong> <strong>Guardian</strong> is the tank. <strong>Mender</strong> is the healer. <strong>Berserker</strong>, <strong>Arcanist</strong> and <strong>Ranger</strong> all deal damage, and share the same gear.</li>
       <li><strong>Off-role loot isn&rsquo;t wasted &mdash; it&rsquo;s currency.</strong> <code>!bag</code> marks anything you can&rsquo;t use with ⛔. Pass it to someone who can with <code>!give @user &lt;#&gt;</code>, or swap for something you need with <code>!trade @user &lt;#&gt;</code>. The patch gears up faster when gear moves.</li>
       <li><strong>Nobody wants it? Melt it.</strong> <code>!salvage &lt;#&gt;</code> turns a piece into credits, and <code>!salvage offrole</code> clears everything your role can&rsquo;t use in one go. It pays less than the piece is worth to a hero who <em>can</em> wear it, so giving it away is always the better deal.</li>
-      <li><strong>Stuck in the wrong role?</strong> <code>!respec &lt;class&gt;</code> changes your class &mdash; and therefore your job &mdash; for credits. You keep your level and renown; your gear goes back to your bag and you get a fresh starter set.</li>
+      <li><strong>Stuck in the wrong role?</strong> <code>!respec &lt;class&gt;</code> changes your class &mdash; and therefore your job &mdash; for credits. You keep your level and your prestige; your gear goes back to your bag and you get a fresh starter set.</li>
     </ul>
+  </div>
+
+  <div class="htpPanel">
+    <h3>⭐ PRESTIGE &mdash; WHAT HAPPENS AT THE END OF A SEASON</h3>
+    <p class="htpIntro">A new season doesn&rsquo;t just swap the bosses. It <strong>resets your hero</strong> &mdash; and that reset is the whole point.</p>
+    <ol class="htpSteps">
+      <li class="htpStep">
+        <span class="htpStepTitle">What you give up 🔥</span>
+        <small>
+          Your hero goes <strong>back to level 1</strong>. EXP to zero. Gear back to a plain starter set, bag emptied.
+          Everything you built that season is spent. (Your <em>class</em> stays &mdash; you&rsquo;re still the same hero.
+          Use <code>!respec</code> if you want a different role.)
+        </small>
+      </li>
+      <li class="htpStep">
+        <span class="htpStepTitle">What you keep, forever ⭐</span>
+        <small>
+          <strong>Prestige.</strong> Every boss the patch downed while you were on the roster earns you a point of renown
+          during the season, and at the rollover all of it converts into permanent prestige.
+        </small>
+      </li>
+      <li class="htpStep">
+        <span class="htpStepTitle">Why that&rsquo;s worth it ⚡</span>
+        <small>
+          Prestige makes every future hero <strong>stronger and faster</strong>: more combat power at any given level,
+          <em>and</em> quicker EXP so you climb back up faster than you did last time. It stacks every season, so your
+          third run through is far quicker than your first. A level 1 with prestige beats a level 1 without &mdash; by a lot.
+        </small>
+      </li>
+    </ol>
+    <p class="htpAside">⭐ Check yours any time with <code>!char</code> &mdash; it shows your prestige and exactly what it&rsquo;s multiplying.</p>
   </div>
 
   <div class="htpPanel">
@@ -150,7 +181,7 @@ game: how-to-play
       </li>
       <li class="cmdRow cmdSub">
         <div class="cmdSyntax"><code>!respec &lt;class&gt;</code> <span class="subTag">subs</span> <span class="cmdAlias">also: !reclass</span></div>
-        <div class="cmdDesc">Change class, and with it your role, for credits. Level and renown are kept; equipped gear returns to your bag and you get a fresh starter set.</div>
+        <div class="cmdDesc">Change class, and with it your role, for credits. Your level and prestige are kept; equipped gear returns to your bag and you get a fresh starter set. A new season does <em>not</em> change your class — this is how you do that.</div>
       </li>
       <li class="cmdRow">
         <div class="cmdSyntax"><code>!top</code> <span class="cmdAlias">also: !top tank / healer / dps</span></div>
@@ -168,6 +199,7 @@ game: how-to-play
       <li><strong>Higher sub tiers hit harder.</strong> A higher subscription tier boosts both how fast your hero earns EXP and its combat power on raid night.</li>
       <li><strong>Chat drops are a fair draw.</strong> Every entrant — and every subscriber tier — has the exact same odds of winning the drawing; no tier gets better loot luck than another.</li>
       <li><strong>Enlist once, raid all season.</strong> <code>!muster</code> puts you on the roster for every remaining week of the season — you don&rsquo;t re-sign each week, and you don&rsquo;t have to be around when the battle runs. A new season starts everyone fresh, so muster again when one begins.</li>
+      <li><strong>A new season resets you to level 1 — on purpose.</strong> You bank <strong>prestige</strong> for every boss the patch downed while you were enlisted, and prestige permanently boosts your power and your EXP rate. Losing the levels is how you earn the thing that makes the next run faster.</li>
       <li><strong>Turnout genuinely changes the outcome.</strong> The boss scales to the size of the raid, but a thin one is still harder — fewer heroes means each of you takes far more of its attention. A small patch really can wipe, and the later bosses really can beat you. That’s the point: bringing more heroes, and better gear, is what turns a loss into a win.</li>
       <li><strong>Raid rewards need no luck at all.</strong> Clear the boss and everyone on the roster is paid, automatically, in their own role. Being enlisted is the whole requirement.</li>
       <li><strong>Bits make drops better, not likelier to be yours.</strong> A cheer of 500+ bits pops a drop for the whole chat, and the bigger the cheer the higher the guaranteed rarity floor. It&rsquo;s still an open draw — the cheerer gets no edge.</li>
@@ -181,6 +213,8 @@ game: how-to-play
       <p class="htpFaqA">EXP only accrues while the stream is <strong>live</strong>. If the channel is offline, your messages won&rsquo;t feed your hero — pop back in once Nikki&rsquo;s live. 🌱</p>
       <p class="htpFaqQ">Do I have to <code>!muster</code> every week?</p>
       <p class="htpFaqA">No. One <code>!muster</code> enlists you for the <strong>whole season</strong> — you&rsquo;re on the roster for every week until the season ends, and your card updates itself with your latest level and gear. You only muster again when a <strong>new season</strong> starts. 🌱</p>
+      <p class="htpFaqQ">A new season started and my hero is level 1 again?!</p>
+      <p class="htpFaqA">That&rsquo;s <strong>prestige</strong>, and it&rsquo;s the good part. Every boss the patch downed while you were on the roster is banked as permanent prestige, which makes every hero you play from now on hit harder <em>and</em> level up faster. The climb back is much quicker than the first one, and it compounds every season. <code>!char</code> shows what yours is worth. ⭐</p>
       <p class="htpFaqQ">I equipped something and my rating didn&rsquo;t move. Why?</p>
       <p class="htpFaqA">It was almost certainly gear for a <strong>different role</strong> — that&rsquo;s worth nothing to you no matter how rare it is. <code>!equip</code> now refuses it outright and tells you which class it&rsquo;s for, and <code>!bag</code> marks it ⛔. Pass it on with <code>!give</code>. 🎁</p>
       <p class="htpFaqQ">Something appeared in my bag and I never grabbed anything.</p>

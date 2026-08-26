@@ -89,7 +89,7 @@
       args: "<class>"
       sub: true
       aliases: "!reclass"
-      desc: "Change class, and with it your battlefield role, for credits. Level, EXP and renown are kept; equipped gear returns to your bag (to trade or salvage) and a fresh starter set for the new role is equipped."
+      desc: "Change class, and with it your battlefield role, for credits. Your level, EXP and <strong>prestige</strong> are kept; equipped gear returns to your bag (to trade or salvage) and a fresh starter set for the new role is equipped. A season rollover does NOT change your class — this is the command for that."
     - cmd: "!top"
       args: "[damage]"
       desc: "The season leaderboard — ONE BOARD PER ROLE, each measured on its own job: <code>!top dps</code> ranks boss damage, <code>!top healer</code> ranks healing done, <code>!top tank</code> ranks damage soaked. A bare <code>!top</code> shows the damage board."
@@ -144,4 +144,4 @@
       desc: "Manage Nikki's <a href='/todo/'>to-do board</a> &mdash; add a dated item (date optional, defaults to today; e.g. <code>!todo add 2026-07-20 order a new mic</code>), cross one off by its number, or list the board. Chat-controlled; the page is read-only."
     - cmd: "!season"
       args: "next | start <id> [name] | rollover <id> [name]"
-      desc: "<code>!season next</code> is the one to use — it works out the tier and the season name itself, so there is nothing to remember or mistype. From a cold start it opens tier 1; otherwise it rolls over: gear resets for everyone, levels and renown are kept, and veterans of the outgoing season are paid prestige renown for each raid they attended. It refuses while a raid is locked or live, and refuses once the last scripted tier has been played. <code>start</code> and <code>rollover</code> take an explicit id and name for off-script seasons."
+      desc: "<code>!season next</code> is the one to use — it works out the tier and the season name itself, so there is nothing to remember or mistype. Rolling a season over is a <strong>PRESTIGE</strong>: every hero drops to level 1 with a fresh starter set and an empty bag, and this season's renown converts into permanent <strong>prestige</strong> — which multiplies both combat power and EXP gain forever. Classes are kept. It refuses while a raid is locked or live, and refuses once the last scripted tier has been played. <code>start</code> and <code>rollover</code> take an explicit id and name for off-script seasons."
