@@ -143,5 +143,5 @@
       aliases: "!todos"
       desc: "Manage Nikki's <a href='/todo/'>to-do board</a> &mdash; add a dated item (date optional, defaults to today; e.g. <code>!todo add 2026-07-20 order a new mic</code>), cross one off by its number, or list the board. Chat-controlled; the page is read-only."
     - cmd: "!season"
-      args: "start <id> | rollover <id>"
-      desc: "Start a new season or roll over into the next."
+      args: "next | start <id> [name] | rollover <id> [name]"
+      desc: "<code>!season next</code> is the one to use — it works out the tier and the season name itself, so there is nothing to remember or mistype. From a cold start it opens tier 1; otherwise it rolls over: gear resets for everyone, levels and renown are kept, and veterans of the outgoing season are paid prestige renown for each raid they attended. It refuses while a raid is locked or live, and refuses once the last scripted tier has been played. <code>start</code> and <code>rollover</code> take an explicit id and name for off-script seasons."
