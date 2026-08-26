@@ -101,154 +101,20 @@ usable gear grants a % of gear rating, tiered by the *weakest* piece. That table
 mirrors `config.rating.setBonusPct` — keep `SET_BONUS_PCT` in
 `_includes/items.html` in step with it.
 
-`_data/items.json` is a **generated** file — never hand-edit it. Regenerate from
-kennyBot after any catalog change:
+**The catalog lives in ONE place.** `src/content/items.js` in kennyBot is the
+source of truth; `seedCatalog()` publishes it to Firebase `items/` on every boot
+(idempotent, and it prunes ids dropped from the catalog). The Compendium reads
+that node and nothing else — the same way `/raid/`, `/leaderboard/` and
+`/arena/` read their nodes.
 
-```
-node scripts/export-catalog.mjs > ../nikkibreanne.github.io/_data/items.json
-```
+There used to be a second, build-time copy in `_data/items.json`. It has been
+removed. It bought nothing — the page cannot function without Firebase anyway —
+and it created a failure mode with no symptom: deploying the site shipped a
+NEWER catalog than the database it renders, so the page quietly showed the older
+one. That is exactly what happened when the 699-item expansion went out ahead of
+the bot, and the page sat at 72 items looking perfectly healthy.
 
-Compose as `_includes/*.html` into pages, the same way `index.html` composes
-`poll.html` etc. The "take me home" banner now lives beneath the meme wall on the
-home page (moved out of the footer).
-
----
-
-## 3. Firebase client pattern (reuse what the poll proved)
-
-Same SDK, same project config, **read-only** calls. Subscribe with `onValue` for
-live updates; no `runTransaction`/`set`/`update` anywhere in game code.
-
-```js
-// reuse the public okrafans firebaseConfig already in _includes/poll.html
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue }
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-const db = getDatabase(initializeApp(firebaseConfig));
-
-// config/raid is the active-raid pointer: { seasonId, weekId, phase, locksAt, startsAt }
-onValue(ref(db, "config/raid"), (snap) => {
-  const cfg = snap.val();
-  if (!cfg) return renderNoRaid();
-  const key = `${cfg.seasonId}/${cfg.weekId}`;
-  onValue(ref(db, `bosses/${key}`), (s) => renderBoss(s.val()));  // name, hp, thresholds, affix
-  onValue(ref(db, `raids/${key}`),  (s) => renderRaid(s.val()));  // signups, team, combat
-});
-```
-
-Reads map onto the spec §9 model + the combat extensions (`IMPLEMENTATION.md §L`):
-`config/raid`, `bosses/<seasonId>/<weekId>`,
-`raids/<seasonId>/<weekId>/{signups,team,combat}`, `players/<twitchUserId>`,
-`usernames/<login>`, `leaderboard/<seasonId>`.
-
-**Notes**
-- Factor the shared `firebaseConfig` so it isn't duplicated between the poll and
-  the game (e.g. one small `assets/js/firebase-config.js`, or a Jekyll include).
-- Render defensively: every node can be missing/null (no season yet, boss not
-  set, a player who hasn't played). Show friendly empty states, never crash.
-- **Detach listeners** (`off()` / the unsubscribe returned by `onValue`) when a
-  view is torn down, so SPA-style navigation doesn't leak connections (each open
-  listener counts against the RTDB connection budget — see §6).
-- Don't trust client time for the countdown; compute from the server-provided
-  `config/raid.startsAt` (epoch ms) and accept minor skew.
-
----
-
-## 4. Bars (extend the poll's bar idiom) — as built
-
-The poll ships a stacked percentage bar (`.pollBar` / `.pollBarYes` /
-`.pollBarNo`). The game reuses that idiom in two places (with their own classes,
-so the features stay independent):
-
-**Muster page (`/raid/`) — role-readiness meters** (`.roleMeter` / `.roleBar`):
-team aggregate role rating vs. boss thresholds, green when met / red when not,
-with the "need more healers!" nudge (the social-pressure messaging from spec
-§5.3 is a UI responsibility — surface unmet thresholds prominently).
-
-```
-⚔️ Team Power 1,370   🛡️ Defense 770   ✚ Healing 340   👥 5
-tank   [█████████░] 320 / 500 ✗  need more tanks!
-healer [█████░░░░░] 280 / 300 ✗  need more healers!
-dps    [██████████] 900 / 800 ✓
-```
-
-**Live battle (`/live/`) — boss + party HP bars** (`.hpBar`/`.hpBarFill`,
-`.pmBar`/`.pmBarFill`): the boss bar depletes and party bars rise/fall as the
-**combat log is revealed** turn by turn (see §8 — the log is the source of truth,
-HP is recomputed from it). No "ticking down through the week" — HP only moves
-during the raid-night battle.
-
-Reuse the okra-campy palette / Comic Neue so it feels native; respect
-`prefers-reduced-motion` (already wired) for the bar transitions and the reveal.
-
----
-
-## 5. Accessibility, polish, correctness
-
-- Bars need text equivalents (current/max numbers), not color alone, for the
-  pass/fail thresholds — don't rely on red/green.
-- `prefers-reduced-motion`: don't animate the HP tick for users who opt out.
-- Escape any user-supplied strings (display names, class names) before injecting
-  into the DOM — they originate from chat. Prefer `textContent` over `innerHTML`
-  for those fields.
-- Lazy-load the Firebase SDK / game JS on the game page only, so the rest of the
-  site stays light.
-
----
-
-## 6. Scaling the read path (know before launch, not POC)
-
-Every viewer holding an `onValue` listener is a **live RTDB connection**. The
-free (Spark) tier caps at **100 concurrent connections** — a popular stream can
-brush that. Options, in order of effort:
-
-1. **POC:** direct `onValue` reads — fine at small scale.
-2. **Launch (cheap):** the bot periodically snapshots the read-state (boss HP,
-   totals, leaderboard) to a single small **static JSON** the site `fetch`es and
-   polls every N seconds — turns N listeners into N cheap CDN reads and sidesteps
-   the connection cap entirely.
-3. **Launch (managed):** move Firebase to the Blaze (pay-as-you-go) tier.
-
-Pick (2) or (3) before any high-traffic launch; don't silently hit the cap.
-
----
-
-## 8. The live battle as a "replay player" (don't reinvent the wheel)
-
-The battle is a **deterministic, seeded, append-only event log** produced by the
-backend (spec §5.8 / `IMPLEMENTATION.md §L`). The live page is just a **player**
-over that log — the same pattern as game replays / battle protocols (e.g.
-Pokémon Showdown). This is what makes it robust:
-
-- **Timed reveal synced to `combat.startsAt`.** Each frame computes
-  `visible = floor((now - startsAt) / MS_PER_EVENT) + 1` and renders
-  `events[0..visible]`. So everyone sees the same moment, **latecomers catch up**,
-  a refresh resumes correctly, and a finished battle is **re-watchable** — no
-  per-client streaming state needed.
-- **HP recomputed from the revealed slice.** The player replays `amount`/`kind`
-  over starting HP to draw boss + party bars (prefers `*HpAfter` fields if the
-  engine stamps them).
-- **`prefers-reduced-motion`** → reveal everything at once (no paced animation).
-
-**Combat-log event contract the UI consumes** (`raids/<s>/<w>/combat`):
-```jsonc
-{ seed, status:"live"|"done", startsAt, bossMaxHp,
-  result: { downed, bossHpRemaining, mvp },
-  log: {                          // KEYS MUST SORT NUMERICALLY (0,1,2,…) — not push-ids
-    "0": { type:"start", text },
-    "1": { type:"turn", n:1 },
-    "2": { type:"action", side:"party"|"enemy", actor, actorName, ability,
-           kind:"damage"|"aoe"|"heal"|"buff", target, targetName, amount, crit, text },
-    "N": { type:"end", outcome:"victory"|"defeat", text } } }
-```
-The engine owns the rendered `text` (battle "voice"); the UI also uses the
-structured fields for HP bars and per-side coloring.
-
-## 7. Out of scope for this repo
-
-- No secrets, service-account JSON, or bot tokens — those live only in the
-  backend's runtime environment.
-- No writes to authoritative game state (§1).
-- No operational/deployment detail (where/how the bot runs) — that's a private
-  backend concern.
+Consequence to remember: **a catalog change is a BOT deploy, not a site deploy.**
+Edit `items.js`, deploy kennyBot, and the page updates live through `onValue`
+with no site rebuild. If the node is empty or unreachable the page says so
+rather than rendering something else.

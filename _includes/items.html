@@ -102,12 +102,6 @@
   </div>
 </section>
 
-<!-- Build-time FALLBACK: the item catalog exported from kennyBot's
-     src/content/items.js (regenerate with `node scripts/export-catalog.mjs`).
-     Rendered instantly so the page is never blank; the live Firebase `items/`
-     seed (seedCatalog on boot) replaces it when present. -->
-<script id="itemsFallback" type="application/json">{{ site.data.items | jsonify }}</script>
-
 <style>
   /* This is a data table, not prose — give it more room than the default 40em
      prose panel so all 7 columns fit on desktop (mobile still scrolls). */
@@ -237,13 +231,7 @@
 
   const MAX_PIN = 4;
   const pinned = new Map();     // id -> item
-  let ALL = [];                 // full catalog (array)
-
-  /* ---- fallback: the build-time export, so we render instantly ---- */
-  try {
-    const raw = JSON.parse(document.getElementById("itemsFallback").textContent || "[]");
-    if (Array.isArray(raw)) ALL = raw;
-  } catch (e) { ALL = []; }
+  let ALL = [];                 // full catalog, straight from Firebase `items/`
 
   function filtered() {
     const q = els.search.value.trim().toLowerCase();
@@ -335,11 +323,17 @@
     [els.role, els.slot, els.rarity, els.set, els.sort].forEach((s) => s.addEventListener(ev, renderTable));
   });
 
-  // First paint from the fallback (instant, offline-safe).
-  renderTable();
-  renderTray();
-
-  /* ---- live upgrade from Firebase items/ (drops the stale flag if any) ---- */
+  /*
+   * Firebase `items/` is the ONLY source for this page, matching every other
+   * page on the site. The catalog is seeded there by kennyBot's seedCatalog()
+   * on boot from src/content/items.js, which is the source of truth.
+   *
+   * There used to be a second, build-time copy in _data/items.json as an
+   * offline fallback. It bought nothing — this page cannot function without
+   * Firebase anyway — and it created a failure mode where a freshly deployed
+   * site shipped a NEWER catalog than the database it renders, so the page
+   * showed the older one with no indication anything was wrong. One source.
+   */
   try {
     const appMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
     const dbMod  = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
@@ -352,7 +346,11 @@
       const val = snap.val() || {};
       const live = Object.keys(val).map((id) => ({ id, ...val[id] }))
         .filter((it) => it && it.name && it.role);
-      if (!live.length) return;      // empty/not-seeded yet → keep the fallback
+      if (!live.length) {            // not seeded yet — say so rather than sit blank
+        els.body.innerHTML = '<tr><td colspan="9" class="cmpEmpty">The catalog hasn\'t been published yet — check back once kennyBot is up. 🌱</td></tr>';
+        els.count.textContent = "";
+        return;
+      }
       ALL = live;
       // Re-attach a stable order if a live record somehow lacks one.
       ALL.forEach((it, i) => { if (typeof it.order !== "number") it.order = i; });
@@ -360,6 +358,11 @@
       [...pinned.keys()].forEach((id) => { if (!ALL.some((x) => x.id === id)) pinned.delete(id); });
       renderTray();
       renderTable();
-    }, () => { /* unreachable → fallback stays */ });
-  } catch (e) { /* Firebase failed to load → fallback stays */ }
+    }, () => { showCatalogError(); });
+  } catch (e) { showCatalogError(); }
+
+  function showCatalogError() {
+    els.body.innerHTML = '<tr><td colspan="9" class="cmpEmpty">Couldn\'t reach the catalog right now — try again in a moment.</td></tr>';
+    els.count.textContent = "";
+  }
 </script>
